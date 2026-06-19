@@ -192,7 +192,7 @@ export default function MainClient() {
   const tabPct = tabTotal === 0 ? 0 : Math.round((tabDone / tabTotal) * 100);
 
   return (
-    <div className="relative z-10 max-w-2xl mx-auto px-4 py-8 min-h-screen">
+    <div className="relative z-10 min-h-screen" style={{ maxWidth: '42rem', margin: '0 auto', padding: '2rem 1rem', width: '100%' }}>
       {/* 헤더 */}
       <div className="text-center mb-8">
         <h1 className="text-2xl font-bold gold-text flex items-center justify-center gap-2">
