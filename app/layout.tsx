@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: '✨ 지니의 준비물 체크리스트',
-  description: '태명 지니를 위한 출산/육아용품 준비물 체크리스트',
+  title: '출산/육아용품 체크리스트',
+  description: '출산/육아용품 준비물 체크리스트',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
