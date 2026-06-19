@@ -195,9 +195,10 @@ export default function MainClient() {
     <div className="relative z-10 max-w-2xl mx-auto px-4 py-8 min-h-screen">
       {/* 헤더 */}
       <div className="text-center mb-8">
-        <div className="text-4xl mb-3 animate-float">🪄</div>
-        <h1 className="text-2xl font-bold gold-text mb-1">지니의 준비물 체크리스트</h1>
-        <p className="text-purple-400/50 text-sm">태명 지니와 함께 꼼꼼하게 준비해요 ✨</p>
+        <h1 className="text-2xl font-bold gold-text flex items-center justify-center gap-2">
+          <span className="animate-float">🪄</span>
+          출산/육아용품 체크리스트
+        </h1>
       </div>
 
       {/* 메인 탭 */}
