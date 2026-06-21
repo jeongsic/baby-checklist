@@ -26,19 +26,24 @@ export default function ItemModal({ mode, item, onClose, onSave }: Props) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold gold-text">
-            {mode === 'add' ? '✨ 준비물 추가' : '준비물 수정'}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1e1b4b' }}>
+            {mode === 'add' ? '준비물 추가' : '준비물 수정'}
           </h3>
-          <button onClick={onClose} className="text-purple-400/50 hover:text-purple-300 text-xl leading-none">✕</button>
+          <button
+            onClick={onClose}
+            style={{ color: '#9ca3af', fontSize: '1.2rem', lineHeight: 1, background: 'none', border: 'none', cursor: 'pointer' }}
+          >✕</button>
         </div>
 
-        <div className="space-y-4">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
-            <label className="text-xs text-purple-300/60 block mb-2">준비물 이름 *</label>
+            <label style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+              준비물 이름 *
+            </label>
             <input
               type="text"
-              className="genie-input"
+              className="app-input"
               placeholder="예) 산모 패드, 속싸개, 젖병..."
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -48,10 +53,12 @@ export default function ItemModal({ mode, item, onClose, onSave }: Props) {
           </div>
 
           <div>
-            <label className="text-xs text-purple-300/60 block mb-2">메모 (선택)</label>
+            <label style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+              메모 (선택)
+            </label>
             <input
               type="text"
-              className="genie-input"
+              className="app-input"
               placeholder="예) 5개 필요, 특정 브랜드 구매 예정..."
               value={memo}
               onChange={(e) => setMemo(e.target.value)}
@@ -59,12 +66,13 @@ export default function ItemModal({ mode, item, onClose, onSave }: Props) {
           </div>
         </div>
 
-        <div className="flex gap-3 mt-6">
-          <button className="btn-ghost flex-1 py-2 text-center" onClick={onClose}>
+        <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
+          <button className="btn-ghost" style={{ flex: 1, padding: '10px' }} onClick={onClose}>
             취소
           </button>
           <button
-            className="btn-primary flex-1 py-2 text-center"
+            className="btn-primary"
+            style={{ flex: 1, padding: '10px', textAlign: 'center' }}
             onClick={handleSave}
             disabled={saving || !name.trim()}
           >

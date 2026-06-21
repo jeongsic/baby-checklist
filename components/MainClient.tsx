@@ -10,17 +10,6 @@ type BirthSub = 'hospital' | 'postpartum';
 type ParentingSub = 'eat' | 'play' | 'sleep';
 type Person = 'mom' | 'baby';
 
-function ProgressBadge({ items }: { items: Item[] }) {
-  const done = items.filter((i) => i.is_ready).length;
-  const total = items.length;
-  const pct = total === 0 ? 0 : Math.round((done / total) * 100);
-  return (
-    <span className="text-xs text-purple-400/60">
-      {done}/{total} ({pct}%)
-    </span>
-  );
-}
-
 function MethodBadge({ method }: { method: CheckMethod | null }) {
   if (!method) return null;
   const info = CHECK_METHODS.find((m) => m.value === method);
@@ -42,14 +31,14 @@ function ItemList({
 }) {
   if (items.length === 0) {
     return (
-      <div className="text-center py-8 text-purple-400/30 text-sm">
-        아직 준비물이 없어요. 추가해보세요 ✨
+      <div className="text-center py-10" style={{ color: '#d1d5db', fontSize: '0.875rem' }}>
+        아직 준비물이 없어요
       </div>
     );
   }
 
   return (
-    <div className="space-y-2">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {items.map((item) => (
         <div
           key={item.id}
@@ -57,30 +46,33 @@ function ItemList({
           onClick={() => onCheckClick(item)}
         >
           <div className={`check-circle ${item.is_ready ? 'checked' : ''}`}>
-            {item.is_ready && <span className="text-white text-xs">✓</span>}
+            {item.is_ready && <span style={{ color: '#fff', fontSize: '12px' }}>✓</span>}
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span
-                className={`text-sm font-medium ${item.is_ready ? 'line-through text-purple-300/40' : 'text-purple-100'}`}
-              >
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={{
+                fontSize: '0.9rem',
+                fontWeight: 500,
+                color: item.is_ready ? '#9ca3af' : '#1e1b4b',
+                textDecoration: item.is_ready ? 'line-through' : 'none',
+              }}>
                 {item.name}
               </span>
               {item.is_ready && <MethodBadge method={item.method} />}
             </div>
             {item.memo && (
-              <p className="text-xs text-purple-400/40 mt-0.5 truncate">{item.memo}</p>
+              <p style={{ fontSize: '0.78rem', color: '#9ca3af', marginTop: '2px' }}>{item.memo}</p>
             )}
             {item.is_ready && item.price && (
-              <p className="text-xs text-yellow-500/50 mt-0.5">
+              <p style={{ fontSize: '0.78rem', color: '#7c3aed', marginTop: '2px', fontWeight: 500 }}>
                 {item.price.toLocaleString()}원
               </p>
             )}
             {item.is_ready && item.from_whom && (
-              <p className="text-xs text-green-400/50 mt-0.5">나눔: {item.from_whom}</p>
+              <p style={{ fontSize: '0.78rem', color: '#16a34a', marginTop: '2px' }}>나눔: {item.from_whom}</p>
             )}
           </div>
-          <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+          <div style={{ display: 'flex', gap: '6px' }} onClick={(e) => e.stopPropagation()}>
             <button className="btn-ghost" onClick={() => onEditClick(item)}>수정</button>
             <button className="btn-danger" onClick={() => onDeleteClick(item)}>삭제</button>
           </div>
@@ -178,31 +170,27 @@ export default function MainClient() {
     await fetchItems();
   }
 
-  function calcProgress(filtered: Item[]) {
-    const done = filtered.filter((i) => i.is_ready).length;
-    return { done, total: filtered.length };
-  }
-
-  // 현재 탭 전체 진행률
   const currentTabItems =
     mainTab === 'birth'
       ? items.filter((i) => i.category_main === 'birth')
       : items.filter((i) => i.category_main === 'parenting');
-  const { done: tabDone, total: tabTotal } = calcProgress(currentTabItems);
+  const tabDone = currentTabItems.filter((i) => i.is_ready).length;
+  const tabTotal = currentTabItems.length;
   const tabPct = tabTotal === 0 ? 0 : Math.round((tabDone / tabTotal) * 100);
 
   return (
-    <div className="relative z-10 min-h-screen" style={{ maxWidth: '42rem', margin: '0 auto', padding: '2rem 1rem', width: '100%' }}>
+    <div style={{ maxWidth: '640px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
+
       {/* 헤더 */}
-      <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold gold-text flex items-center justify-center gap-2">
+      <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+        <h1 style={{ fontSize: '1.6rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
           <span className="animate-float">🪄</span>
-          출산/육아용품 체크리스트
+          <span className="brand-text">출산/육아용품 체크리스트</span>
         </h1>
       </div>
 
       {/* 메인 탭 */}
-      <div className="flex gap-2 justify-center mb-6">
+      <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '28px' }}>
         {[
           { value: 'birth', label: '출산용품', icon: '🤰' },
           { value: 'parenting', label: '육아용품', icon: '👶' },
@@ -217,12 +205,12 @@ export default function MainClient() {
         ))}
       </div>
 
-      {/* 탭 전체 진행률 */}
+      {/* 진행률 */}
       {tabTotal > 0 && (
-        <div className="mb-6">
-          <div className="flex justify-between text-xs text-purple-400/50 mb-2">
-            <span>{tabDone}/{tabTotal} 준비 완료</span>
-            <span>{tabPct}%</span>
+        <div style={{ marginBottom: '28px', padding: '16px 20px', background: '#ffffff', borderRadius: '12px', border: '1px solid #ede9fe' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '10px' }}>
+            <span style={{ color: '#6b7280' }}>{tabDone}/{tabTotal} 준비 완료</span>
+            <span style={{ color: '#7c3aed', fontWeight: 600 }}>{tabPct}%</span>
           </div>
           <div className="progress-bar">
             <div className="progress-fill" style={{ width: `${tabPct}%` }} />
@@ -231,32 +219,30 @@ export default function MainClient() {
       )}
 
       {loading ? (
-        <div className="text-center py-16 text-purple-400/40 text-sm">
-          <div className="text-3xl mb-3 animate-twinkle">✨</div>
+        <div style={{ textAlign: 'center', padding: '64px 0', color: '#d1d5db', fontSize: '0.9rem' }}>
           불러오는 중...
         </div>
       ) : (
         <>
-          {/* 출산용품 탭 */}
+          {/* 출산용품 */}
           {mainTab === 'birth' && (
-            <div className="space-y-6">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {BIRTH_SUBS.map((sub) => (
-                <div key={sub.value} className="genie-card p-5">
-                  <h2 className="text-base font-semibold text-purple-200 mb-4">
+                <div key={sub.value} className="card" style={{ padding: '24px' }}>
+                  <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#1e1b4b', marginBottom: '18px' }}>
                     {sub.icon} {sub.label}
                   </h2>
 
                   {/* 산모/아기 서브탭 */}
-                  <div className="flex gap-2 mb-4">
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
                     {BIRTH_PERSONS.map((p) => {
                       const filtered = filterItems('birth', sub.value, p.value as Person);
-                      const { done, total } = calcProgress(filtered);
+                      const done = filtered.filter((i) => i.is_ready).length;
+                      const total = filtered.length;
                       return (
                         <button
                           key={p.value}
-                          className={`sub-tab ${
-                            birthSub === sub.value && person === p.value ? 'active' : ''
-                          }`}
+                          className={`sub-tab ${birthSub === sub.value && person === p.value ? 'active' : ''}`}
                           onClick={() => {
                             setBirthSub(sub.value as BirthSub);
                             setPerson(p.value as Person);
@@ -264,7 +250,7 @@ export default function MainClient() {
                         >
                           {p.icon} {p.label}
                           {total > 0 && (
-                            <span className="ml-1 opacity-60 text-xs">
+                            <span style={{ marginLeft: '6px', opacity: 0.6, fontSize: '0.75rem' }}>
                               {done}/{total}
                             </span>
                           )}
@@ -273,7 +259,6 @@ export default function MainClient() {
                     })}
                   </div>
 
-                  {/* 현재 선택된 섹션 아이템 */}
                   {BIRTH_PERSONS.map((p) => {
                     if (!(birthSub === sub.value && person === p.value)) return null;
                     const filtered = filterItems('birth', sub.value, p.value as Person);
@@ -286,7 +271,7 @@ export default function MainClient() {
                           onDeleteClick={handleDelete}
                         />
                         <button
-                          className="mt-3 w-full py-2.5 rounded-xl border border-dashed border-purple-600/30 text-purple-400/50 text-sm hover:border-purple-500/50 hover:text-purple-300/70 transition-all"
+                          className="add-btn"
                           onClick={() => openAddModal('birth', sub.value, p.value as Person)}
                         >
                           + 준비물 추가
@@ -299,14 +284,14 @@ export default function MainClient() {
             </div>
           )}
 
-          {/* 육아용품 탭 */}
+          {/* 육아용품 */}
           {mainTab === 'parenting' && (
-            <div className="genie-card p-5">
-              {/* 먹/놀/잠 탭 */}
-              <div className="flex gap-2 mb-5">
+            <div className="card" style={{ padding: '24px' }}>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
                 {PARENTING_SUBS.map((sub) => {
                   const filtered = filterItems('parenting', sub.value);
-                  const { done, total } = calcProgress(filtered);
+                  const done = filtered.filter((i) => i.is_ready).length;
+                  const total = filtered.length;
                   return (
                     <button
                       key={sub.value}
@@ -315,7 +300,7 @@ export default function MainClient() {
                     >
                       {sub.icon} {sub.label}
                       {total > 0 && (
-                        <span className="ml-1 opacity-60 text-xs">
+                        <span style={{ marginLeft: '6px', opacity: 0.6, fontSize: '0.75rem' }}>
                           {done}/{total}
                         </span>
                       )}
@@ -336,7 +321,7 @@ export default function MainClient() {
                       onDeleteClick={handleDelete}
                     />
                     <button
-                      className="mt-3 w-full py-2.5 rounded-xl border border-dashed border-purple-600/30 text-purple-400/50 text-sm hover:border-purple-500/50 hover:text-purple-300/70 transition-all"
+                      className="add-btn"
                       onClick={() => openAddModal('parenting', sub.value)}
                     >
                       + 준비물 추가
@@ -349,7 +334,6 @@ export default function MainClient() {
         </>
       )}
 
-      {/* 아이템 추가/수정 모달 */}
       {itemModal.open && (
         <ItemModal
           mode={itemModal.mode}
@@ -359,7 +343,6 @@ export default function MainClient() {
         />
       )}
 
-      {/* 체크 모달 */}
       {checkModal.open && checkModal.item && (
         <CheckModal
           item={checkModal.item}

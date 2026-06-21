@@ -39,80 +39,89 @@ export default function CheckModal({ item, onClose, onSave }: Props) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-start justify-between mb-6">
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '24px' }}>
           <div>
-            <p className="text-xs text-purple-300/50 mb-1">준비 상태 업데이트</p>
-            <h3 className="text-lg font-semibold text-purple-100">{item.name}</h3>
+            <p style={{ fontSize: '0.78rem', color: '#9ca3af', marginBottom: '4px' }}>준비 상태 업데이트</p>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1e1b4b' }}>{item.name}</h3>
           </div>
-          <button onClick={onClose} className="text-purple-400/50 hover:text-purple-300 text-xl leading-none">✕</button>
+          <button
+            onClick={onClose}
+            style={{ color: '#9ca3af', fontSize: '1.2rem', lineHeight: 1, background: 'none', border: 'none', cursor: 'pointer' }}
+          >✕</button>
         </div>
 
         {/* 준비 여부 토글 */}
-        <div className="flex gap-3 mb-6">
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '24px' }}>
           <button
-            className={`flex-1 py-3 rounded-xl font-semibold text-sm transition-all border ${
-              !isReady
-                ? 'bg-purple-900/40 border-purple-500/40 text-purple-300'
-                : 'bg-transparent border-purple-700/20 text-purple-500/40'
-            }`}
+            style={{
+              flex: 1, padding: '12px', borderRadius: '10px', fontWeight: 600, fontSize: '0.9rem',
+              border: !isReady ? '2px solid #7c3aed' : '2px solid #e5e7eb',
+              background: !isReady ? '#ede9fe' : '#fafafa',
+              color: !isReady ? '#7c3aed' : '#9ca3af',
+              cursor: 'pointer', transition: 'all 0.15s',
+            }}
             onClick={() => setIsReady(false)}
           >
-            아직 미준비
+            미준비
           </button>
           <button
-            className={`flex-1 py-3 rounded-xl font-semibold text-sm transition-all border ${
-              isReady
-                ? 'border-yellow-400/50 text-yellow-300'
-                : 'bg-transparent border-purple-700/20 text-purple-500/40'
-            }`}
-            style={isReady ? { background: 'linear-gradient(135deg, #78350f, #92400e)' } : {}}
+            style={{
+              flex: 1, padding: '12px', borderRadius: '10px', fontWeight: 600, fontSize: '0.9rem',
+              border: isReady ? '2px solid #7c3aed' : '2px solid #e5e7eb',
+              background: isReady ? '#7c3aed' : '#fafafa',
+              color: isReady ? '#ffffff' : '#9ca3af',
+              cursor: 'pointer', transition: 'all 0.15s',
+            }}
             onClick={() => setIsReady(true)}
           >
-            ✨ 준비 완료
+            ✓ 준비 완료
           </button>
         </div>
 
-        {/* 방법 선택 (준비됨일 때만) */}
+        {/* 방법 선택 */}
         {isReady && (
-          <div className="space-y-4">
-            <p className="text-xs text-purple-300/60 font-medium">어떻게 준비했나요?</p>
-            <div className="flex gap-2">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <p style={{ fontSize: '0.8rem', color: '#6b7280', fontWeight: 500 }}>어떻게 준비했나요?</p>
+            <div style={{ display: 'flex', gap: '8px' }}>
               {CHECK_METHODS.map((m) => (
                 <button
                   key={m.value}
                   className={`method-btn ${method === m.value ? 'selected' : ''}`}
                   onClick={() => setMethod(m.value)}
                 >
-                  <div className="text-lg mb-1">{m.icon}</div>
+                  <div style={{ fontSize: '1.3rem', marginBottom: '4px' }}>{m.icon}</div>
                   <div>{m.label}</div>
                 </button>
               ))}
             </div>
 
-            {/* 가격 입력 (구매/당근) */}
             {method && selectedMethodInfo?.hasPrice && (
               <div>
-                <label className="text-xs text-purple-300/60 block mb-2">가격</label>
-                <div className="relative">
+                <label style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+                  가격
+                </label>
+                <div style={{ position: 'relative' }}>
                   <input
                     type="number"
-                    className="genie-input pr-10"
+                    className="app-input"
+                    style={{ paddingRight: '36px' }}
                     placeholder="0"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-400/50 text-sm">원</span>
+                  <span style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', fontSize: '0.875rem' }}>원</span>
                 </div>
               </div>
             )}
 
-            {/* 나눔자 입력 */}
             {method && selectedMethodInfo?.hasFromWhom && (
               <div>
-                <label className="text-xs text-purple-300/60 block mb-2">누구에게 나눔받았나요?</label>
+                <label style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+                  누구에게 나눔받았나요?
+                </label>
                 <input
                   type="text"
-                  className="genie-input"
+                  className="app-input"
                   placeholder="예) 언니, 친구 홍길동"
                   value={fromWhom}
                   onChange={(e) => setFromWhom(e.target.value)}
@@ -122,13 +131,13 @@ export default function CheckModal({ item, onClose, onSave }: Props) {
           </div>
         )}
 
-        {/* 저장 버튼 */}
-        <div className="flex gap-3 mt-6">
-          <button className="btn-ghost flex-1 py-2 text-center" onClick={onClose}>
+        <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
+          <button className="btn-ghost" style={{ flex: 1, padding: '10px' }} onClick={onClose}>
             취소
           </button>
           <button
-            className="btn-primary flex-1 py-2 text-center"
+            className="btn-primary"
+            style={{ flex: 1, padding: '10px', textAlign: 'center' }}
             onClick={handleSave}
             disabled={saving}
           >
