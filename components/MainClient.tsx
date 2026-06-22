@@ -88,7 +88,7 @@ function ItemList({
                     {'★'.repeat(item.priority)}
                   </span>
                 )}
-                {item.category_person && (
+                {isTodo && item.category_person && (
                   <PersonBadge person={item.category_person} />
                 )}
                 {!isTodo && item.is_ready && <MethodBadge method={item.method} />}
