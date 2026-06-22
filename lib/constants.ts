@@ -12,7 +12,7 @@ export const PARENTING_SUBS = [
   { value: 'eat', label: '수유', icon: '🍼' },
   { value: 'play', label: '놀이', icon: '🧸' },
   { value: 'sleep', label: '수면', icon: '🌙' },
-  { value: 'wash', label: '목욕', icon: '🛁' },
+  { value: 'wash', label: '목욕/위생', icon: '🛁' },
   { value: 'poop', label: '배변', icon: '🚼' },
   { value: 'outing', label: '외출', icon: '🚗' },
   { value: 'parent', label: '부모', icon: '🙋' },

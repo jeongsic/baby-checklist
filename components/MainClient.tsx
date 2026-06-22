@@ -226,11 +226,8 @@ export default function MainClient({
     .reduce((s, i) => s + (i.price ?? 0), 0);
 
   return (
-    <div style={{
-      maxWidth: '640px',
-      margin: '0 auto',
+    <div className="main-container" style={{
       padding: `40px 20px ${readOnly ? '88px' : '40px'}`,
-      width: '100%',
     }}>
 
       {/* 헤더 */}
