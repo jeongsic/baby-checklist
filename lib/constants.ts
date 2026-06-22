@@ -19,6 +19,11 @@ export const PARENTING_SUBS = [
   { value: 'parent', label: '부모', icon: '🙋' },
 ] as const;
 
+export const TODO_PERSONS = [
+  { value: 'mom', label: '엄마', icon: '👩' },
+  { value: 'dad', label: '아빠', icon: '👨' },
+] as const;
+
 export const CHECK_METHODS = [
   { value: 'purchase', label: '구매', icon: '🛒', hasPrice: true, hasStore: true, hasFromWhom: false, fromWhomLabel: '' },
   { value: 'daangn', label: '당근', icon: '🥕', hasPrice: true, hasStore: true, hasFromWhom: false, fromWhomLabel: '' },

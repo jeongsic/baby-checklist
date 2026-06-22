@@ -1,7 +1,8 @@
-export type MainType = 'birth' | 'parenting';
+export type MainType = 'birth' | 'parenting' | 'todo';
 export type BirthSubType = 'hospital' | 'postpartum';
 export type ParentingSubType = 'eat' | 'play' | 'sleep' | 'wash' | 'poop';
 export type PersonType = 'mom' | 'baby' | 'dad';
+export type TodoPersonType = 'mom' | 'dad';
 export type CheckMethod = 'purchase' | 'sharing' | 'daangn' | 'gift';
 
 export interface Account {

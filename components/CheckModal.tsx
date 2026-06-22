@@ -17,6 +17,8 @@ interface Props {
 }
 
 export default function CheckModal({ item, onClose, onSave }: Props) {
+  const isTodo = item.category_main === 'todo';
+
   const [isReady, setIsReady] = useState(!!item.is_ready);
   const [method, setMethod] = useState<CheckMethod | null>(item.method ?? null);
   const [price, setPrice] = useState(item.price?.toString() ?? '');
@@ -28,13 +30,17 @@ export default function CheckModal({ item, onClose, onSave }: Props) {
 
   async function handleSave() {
     setSaving(true);
-    await onSave(item.id, {
-      is_ready: isReady,
-      method: isReady ? (method ?? undefined) : undefined,
-      price: isReady && selectedMethodInfo?.hasPrice && price ? Number(price) : undefined,
-      store: isReady && selectedMethodInfo?.hasStore && store ? store : undefined,
-      from_whom: isReady && selectedMethodInfo?.hasFromWhom && fromWhom ? fromWhom : undefined,
-    });
+    if (isTodo) {
+      await onSave(item.id, { is_ready: isReady });
+    } else {
+      await onSave(item.id, {
+        is_ready: isReady,
+        method: isReady ? (method ?? undefined) : undefined,
+        price: isReady && selectedMethodInfo?.hasPrice && price ? Number(price) : undefined,
+        store: isReady && selectedMethodInfo?.hasStore && store ? store : undefined,
+        from_whom: isReady && selectedMethodInfo?.hasFromWhom && fromWhom ? fromWhom : undefined,
+      });
+    }
     setSaving(false);
     onClose();
   }
@@ -44,7 +50,9 @@ export default function CheckModal({ item, onClose, onSave }: Props) {
       <div className="modal-box" onClick={(e) => e.stopPropagation()}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '24px' }}>
           <div>
-            <p style={{ fontSize: '0.78rem', color: '#9ca3af', marginBottom: '4px' }}>준비 상태 업데이트</p>
+            <p style={{ fontSize: '0.78rem', color: '#9ca3af', marginBottom: '4px' }}>
+              {isTodo ? '할 일 상태 업데이트' : '준비 상태 업데이트'}
+            </p>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1e1b4b' }}>{item.name}</h3>
           </div>
           <button
@@ -53,7 +61,7 @@ export default function CheckModal({ item, onClose, onSave }: Props) {
           >✕</button>
         </div>
 
-        {/* 준비 여부 토글 */}
+        {/* 완료 여부 토글 */}
         <div style={{ display: 'flex', gap: '10px', marginBottom: '24px' }}>
           <button
             style={{
@@ -65,7 +73,7 @@ export default function CheckModal({ item, onClose, onSave }: Props) {
             }}
             onClick={() => setIsReady(false)}
           >
-            미준비
+            {isTodo ? '미완료' : '미준비'}
           </button>
           <button
             style={{
@@ -77,12 +85,12 @@ export default function CheckModal({ item, onClose, onSave }: Props) {
             }}
             onClick={() => setIsReady(true)}
           >
-            ✓ 준비 완료
+            {isTodo ? '✓ 완료' : '✓ 준비 완료'}
           </button>
         </div>
 
-        {/* 방법 선택 */}
-        {isReady && (
+        {/* 방법 선택 — 준비물 전용 */}
+        {!isTodo && isReady && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <p style={{ fontSize: '0.8rem', color: '#6b7280', fontWeight: 500 }}>어떻게 준비했나요?</p>
             <div style={{ display: 'flex', gap: '8px' }}>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Item, MainType, CheckMethod } from '@/lib/types';
-import { BIRTH_SUBS, BIRTH_PERSONS, PARENTING_SUBS, CHECK_METHODS } from '@/lib/constants';
+import { BIRTH_SUBS, BIRTH_PERSONS, PARENTING_SUBS, CHECK_METHODS, TODO_PERSONS } from '@/lib/constants';
 import { SAMPLE_ITEMS } from '@/lib/sampleData';
 import ItemModal from './ItemModal';
 import CheckModal from './CheckModal';
@@ -11,6 +11,7 @@ import SpendingModal from './SpendingModal';
 type BirthSub = 'hospital' | 'postpartum';
 type ParentingSub = 'eat' | 'play' | 'sleep' | 'wash' | 'poop' | 'outing' | 'parent';
 type Person = 'mom' | 'baby' | 'dad';
+type TodoPerson = 'all' | 'mom' | 'dad';
 
 function MethodBadge({ method }: { method: CheckMethod | null }) {
   if (!method) return null;
@@ -20,78 +21,101 @@ function MethodBadge({ method }: { method: CheckMethod | null }) {
   return <span className={`method-badge ${cls}`}>{info.icon} {info.label}</span>;
 }
 
+function PersonBadge({ person }: { person: string }) {
+  const info = TODO_PERSONS.find((p) => p.value === person);
+  if (!info) return null;
+  return (
+    <span style={{
+      fontSize: '0.72rem', padding: '2px 7px', borderRadius: '99px',
+      background: person === 'mom' ? '#fce7f3' : '#dbeafe',
+      color: person === 'mom' ? '#be185d' : '#1d4ed8',
+      fontWeight: 500,
+    }}>
+      {info.icon} {info.label}
+    </span>
+  );
+}
+
 function ItemList({
   items,
   onCheckClick,
   onEditClick,
   onDeleteClick,
   readOnly,
+  emptyText,
 }: {
   items: Item[];
   onCheckClick: (item: Item) => void;
   onEditClick: (item: Item) => void;
   onDeleteClick: (item: Item) => void;
   readOnly?: boolean;
+  emptyText?: string;
 }) {
   if (items.length === 0) {
     return (
       <div className="text-center py-10" style={{ color: '#d1d5db', fontSize: '0.875rem' }}>
-        아직 준비물이 없어요
+        {emptyText ?? '아직 준비물이 없어요'}
       </div>
     );
   }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      {items.map((item) => (
-        <div
-          key={item.id}
-          className={`item-row ${item.is_ready ? 'checked' : ''}`}
-          onClick={readOnly ? undefined : () => onCheckClick(item)}
-          style={{ cursor: readOnly ? 'default' : 'pointer' }}
-        >
-          <div className={`check-circle ${item.is_ready ? 'checked' : ''}`}>
-            {item.is_ready && <span style={{ color: '#fff', fontSize: '12px' }}>✓</span>}
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <span style={{
-                fontSize: '0.9rem',
-                fontWeight: 500,
-                color: item.is_ready ? '#d1d5db' : '#1e1b4b',
-                textDecoration: item.is_ready ? 'line-through' : 'none',
-              }}>
-                {item.name}
-              </span>
-              {!item.is_ready && item.priority > 0 && (
-                <span style={{ fontSize: '0.7rem', letterSpacing: '-1px', color: '#f59e0b' }}>
-                  {'★'.repeat(item.priority)}
+      {items.map((item) => {
+        const isTodo = item.category_main === 'todo';
+        return (
+          <div
+            key={item.id}
+            className={`item-row ${item.is_ready ? 'checked' : ''}`}
+            onClick={readOnly ? undefined : () => onCheckClick(item)}
+            style={{ cursor: readOnly ? 'default' : 'pointer' }}
+          >
+            <div className={`check-circle ${item.is_ready ? 'checked' : ''}`}>
+              {item.is_ready && <span style={{ color: '#fff', fontSize: '12px' }}>✓</span>}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <span style={{
+                  fontSize: '0.9rem',
+                  fontWeight: 500,
+                  color: item.is_ready ? '#d1d5db' : '#1e1b4b',
+                  textDecoration: item.is_ready ? 'line-through' : 'none',
+                }}>
+                  {item.name}
                 </span>
+                {!item.is_ready && item.priority > 0 && (
+                  <span style={{ fontSize: '0.7rem', letterSpacing: '-1px', color: '#f59e0b' }}>
+                    {'★'.repeat(item.priority)}
+                  </span>
+                )}
+                {item.category_person && (
+                  <PersonBadge person={item.category_person} />
+                )}
+                {!isTodo && item.is_ready && <MethodBadge method={item.method} />}
+              </div>
+              {item.memo && (
+                <p style={{ fontSize: '0.78rem', color: '#9ca3af', marginTop: '2px' }}>{item.memo}</p>
               )}
-              {item.is_ready && <MethodBadge method={item.method} />}
+              {!isTodo && item.is_ready && item.price && (
+                <p style={{ fontSize: '0.78rem', color: '#7c3aed', marginTop: '2px', fontWeight: 500 }}>
+                  {item.price.toLocaleString()}원{item.store ? ` · ${item.store}` : ''}
+                </p>
+              )}
+              {!isTodo && item.is_ready && item.from_whom && (
+                <p style={{ fontSize: '0.78rem', color: item.method === 'gift' ? '#a21caf' : '#16a34a', marginTop: '2px' }}>
+                  {item.method === 'gift' ? '선물' : '나눔'}: {item.from_whom}
+                </p>
+              )}
             </div>
-            {item.memo && (
-              <p style={{ fontSize: '0.78rem', color: '#9ca3af', marginTop: '2px' }}>{item.memo}</p>
-            )}
-            {item.is_ready && item.price && (
-              <p style={{ fontSize: '0.78rem', color: '#7c3aed', marginTop: '2px', fontWeight: 500 }}>
-                {item.price.toLocaleString()}원{item.store ? ` · ${item.store}` : ''}
-              </p>
-            )}
-            {item.is_ready && item.from_whom && (
-              <p style={{ fontSize: '0.78rem', color: item.method === 'gift' ? '#a21caf' : '#16a34a', marginTop: '2px' }}>
-                {item.method === 'gift' ? '선물' : '나눔'}: {item.from_whom}
-              </p>
+            {!readOnly && (
+              <div style={{ display: 'flex', gap: '6px' }} onClick={(e) => e.stopPropagation()}>
+                <button className="btn-ghost" onClick={() => onEditClick(item)}>수정</button>
+                <button className="btn-danger" onClick={() => onDeleteClick(item)}>삭제</button>
+              </div>
             )}
           </div>
-          {!readOnly && (
-            <div style={{ display: 'flex', gap: '6px' }} onClick={(e) => e.stopPropagation()}>
-              <button className="btn-ghost" onClick={() => onEditClick(item)}>수정</button>
-              <button className="btn-danger" onClick={() => onDeleteClick(item)}>삭제</button>
-            </div>
-          )}
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -115,12 +139,13 @@ export default function MainClient({
   const [birthSub, setBirthSub] = useState<BirthSub>('hospital');
   const [parentingSub, setParentingSub] = useState<ParentingSub>('eat');
   const [person, setPerson] = useState<Person>('mom');
+  const [todoPerson, setTodoPerson] = useState<TodoPerson>('all');
 
   const [itemModal, setItemModal] = useState<{
     open: boolean;
     mode: 'add' | 'edit';
     item?: Item;
-    context?: { main: MainType; sub: string; person?: Person };
+    context?: { main: MainType; sub: string; person?: string };
   }>({ open: false, mode: 'add' });
 
   const [checkModal, setCheckModal] = useState<{ open: boolean; item?: Item }>({ open: false });
@@ -160,7 +185,18 @@ export default function MainClient({
     return [...incomplete, ...complete];
   }
 
-  function openAddModal(main: MainType, sub: string, p?: Person) {
+  function filterTodoItems(personFilter: TodoPerson) {
+    const filtered = items.filter(
+      (i) =>
+        i.category_main === 'todo' &&
+        (personFilter === 'all' || i.category_person === personFilter)
+    );
+    const incomplete = filtered.filter((i) => !i.is_ready).sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+    const complete = filtered.filter((i) => i.is_ready);
+    return [...incomplete, ...complete];
+  }
+
+  function openAddModal(main: MainType, sub: string, p?: string) {
     setItemModal({ open: true, mode: 'add', context: { main, sub, person: p } });
   }
 
@@ -177,7 +213,7 @@ export default function MainClient({
         body: JSON.stringify({
           category_main: main,
           category_sub: sub,
-          category_person: p ?? null,
+          category_person: main === 'todo' ? (data.category_person ?? null) : (p ?? null),
           name: data.name,
           memo: data.memo || null,
           priority: data.priority,
@@ -221,7 +257,9 @@ export default function MainClient({
   const currentTabItems =
     mainTab === 'birth'
       ? items.filter((i) => i.category_main === 'birth')
-      : items.filter((i) => i.category_main === 'parenting');
+      : mainTab === 'parenting'
+      ? items.filter((i) => i.category_main === 'parenting')
+      : items.filter((i) => i.category_main === 'todo');
   const tabDone = currentTabItems.filter((i) => i.is_ready).length;
   const tabTotal = currentTabItems.length;
   const tabPct = tabTotal === 0 ? 0 : Math.round((tabDone / tabTotal) * 100);
@@ -249,6 +287,7 @@ export default function MainClient({
         {[
           { value: 'birth', label: '출산용품', icon: '🤰' },
           { value: 'parenting', label: '육아용품', icon: '👶' },
+          { value: 'todo', label: '해야할 일', icon: '✅' },
         ].map((tab) => (
           <button
             key={tab.value}
@@ -266,7 +305,9 @@ export default function MainClient({
           {tabTotal > 0 && (
             <>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '10px' }}>
-                <span style={{ color: '#7c3aed', fontWeight: 600 }}>{tabPct}% 준비 완료</span>
+                <span style={{ color: '#7c3aed', fontWeight: 600 }}>
+                  {tabPct}% {mainTab === 'todo' ? '완료' : '준비 완료'}
+                </span>
                 <span style={{ color: '#6b7280' }}>{tabDone}/{tabTotal}</span>
               </div>
               <div className="progress-bar">
@@ -274,20 +315,22 @@ export default function MainClient({
               </div>
             </>
           )}
-          <button
-            onClick={() => setSpendingModal(true)}
-            style={{
-              marginTop: tabTotal > 0 ? '12px' : '0',
-              display: 'flex', alignItems: 'center', gap: '6px',
-              fontSize: '0.8rem', background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-              color: totalSpend > 0 ? '#7c3aed' : '#9ca3af',
-            }}
-          >
-            <span>💰</span>
-            <span>총 지출</span>
-            <span style={{ fontWeight: 700 }}>{totalSpend.toLocaleString()}원</span>
-            <span style={{ opacity: 0.4, fontSize: '0.7rem' }}>›</span>
-          </button>
+          {mainTab !== 'todo' && (
+            <button
+              onClick={() => setSpendingModal(true)}
+              style={{
+                marginTop: tabTotal > 0 ? '12px' : '0',
+                display: 'flex', alignItems: 'center', gap: '6px',
+                fontSize: '0.8rem', background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                color: totalSpend > 0 ? '#7c3aed' : '#9ca3af',
+              }}
+            >
+              <span>💰</span>
+              <span>총 지출</span>
+              <span style={{ fontWeight: 700 }}>{totalSpend.toLocaleString()}원</span>
+              <span style={{ opacity: 0.4, fontSize: '0.7rem' }}>›</span>
+            </button>
+          )}
         </div>
       )}
 
@@ -436,6 +479,66 @@ export default function MainClient({
               })}
             </div>
           )}
+
+          {/* 해야할 일 */}
+          {mainTab === 'todo' && (
+            <div className="card" style={{ padding: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {([
+                    { value: 'all', label: '전체', icon: '📋' },
+                    { value: 'mom', label: '엄마', icon: '👩' },
+                    { value: 'dad', label: '아빠', icon: '👨' },
+                  ] as { value: TodoPerson; label: string; icon: string }[]).map((p) => {
+                    const count = filterTodoItems(p.value).length;
+                    return (
+                      <button
+                        key={p.value}
+                        className={`sub-tab ${todoPerson === p.value ? 'active' : ''}`}
+                        onClick={() => setTodoPerson(p.value)}
+                      >
+                        {p.icon} {p.label}
+                        {count > 0 && todoPerson === p.value && (
+                          <span style={{ marginLeft: '6px', opacity: 0.6, fontSize: '0.75rem' }}>
+                            {filterTodoItems(p.value).filter((i) => i.is_ready).length}/{count}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+                {!readOnly && (
+                  <button
+                    onClick={() => openAddModal('todo', 'todo')}
+                    style={{
+                      width: '30px', height: '30px', borderRadius: '50%',
+                      background: '#ede9fe', color: '#7c3aed',
+                      fontSize: '1.3rem', border: 'none', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontWeight: 700, lineHeight: 1, flexShrink: 0,
+                    }}
+                  >+</button>
+                )}
+              </div>
+
+              <ItemList
+                items={filterTodoItems(todoPerson)}
+                onCheckClick={(item) => !readOnly && setCheckModal({ open: true, item })}
+                onEditClick={openEditModal}
+                onDeleteClick={handleDelete}
+                readOnly={readOnly}
+                emptyText="아직 할 일이 없어요"
+              />
+              {!readOnly && (
+                <button
+                  className="add-btn"
+                  onClick={() => openAddModal('todo', 'todo')}
+                >
+                  + 할 일 추가
+                </button>
+              )}
+            </div>
+          )}
         </>
       )}
 
@@ -444,6 +547,7 @@ export default function MainClient({
           mode={itemModal.mode}
           item={itemModal.item}
           babyName={babyName}
+          context={itemModal.context}
           onClose={() => setItemModal({ open: false, mode: 'add' })}
           onSave={handleItemSave}
         />
@@ -469,7 +573,8 @@ export default function MainClient({
         <button
           onClick={() => {
             if (mainTab === 'birth') openAddModal('birth', birthSub, person);
-            else openAddModal('parenting', parentingSub);
+            else if (mainTab === 'parenting') openAddModal('parenting', parentingSub);
+            else openAddModal('todo', 'todo');
           }}
           style={{
             position: 'fixed',

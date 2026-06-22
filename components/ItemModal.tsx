@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Item, MainType } from '@/lib/types';
-import { BIRTH_SUBS, BIRTH_PERSONS, PARENTING_SUBS } from '@/lib/constants';
+import { BIRTH_SUBS, BIRTH_PERSONS, PARENTING_SUBS, TODO_PERSONS } from '@/lib/constants';
 
 interface SaveData {
   name: string;
@@ -17,6 +17,7 @@ interface Props {
   mode: 'add' | 'edit';
   item?: Item;
   babyName?: string;
+  context?: { main: MainType; sub: string; person?: string };
   onClose: () => void;
   onSave: (data: SaveData) => Promise<void>;
 }
@@ -32,7 +33,7 @@ const SEL_STYLE = (active: boolean) => ({
   cursor: 'pointer' as const,
 });
 
-export default function ItemModal({ mode, item, babyName, onClose, onSave }: Props) {
+export default function ItemModal({ mode, item, babyName, context, onClose, onSave }: Props) {
   const [name, setName] = useState(item?.name ?? '');
   const [memo, setMemo] = useState(item?.memo ?? '');
   const [priority, setPriority] = useState(item?.priority ?? 0);
@@ -41,13 +42,18 @@ export default function ItemModal({ mode, item, babyName, onClose, onSave }: Pro
   const [catPerson, setCatPerson] = useState<string | null>(item?.category_person ?? null);
   const [saving, setSaving] = useState(false);
 
+  const isTodoItem = mode === 'edit' ? catMain === 'todo' : context?.main === 'todo';
+
   function handleMainChange(main: MainType) {
     setCatMain(main);
     if (main === 'birth') {
       setCatSub('hospital');
       setCatPerson('mom');
-    } else {
+    } else if (main === 'parenting') {
       setCatSub('eat');
+      setCatPerson(null);
+    } else {
+      setCatSub('todo');
       setCatPerson(null);
     }
   }
@@ -58,8 +64,10 @@ export default function ItemModal({ mode, item, babyName, onClose, onSave }: Pro
     const saveData: SaveData = { name: name.trim(), memo: memo.trim(), priority };
     if (mode === 'edit') {
       saveData.category_main = catMain;
-      saveData.category_sub = catSub;
-      saveData.category_person = catMain === 'birth' ? catPerson : null;
+      saveData.category_sub = catMain === 'todo' ? 'todo' : catSub;
+      saveData.category_person = catMain === 'birth' ? catPerson : catMain === 'todo' ? catPerson : null;
+    } else if (isTodoItem) {
+      saveData.category_person = catPerson;
     }
     await onSave(saveData);
     setSaving(false);
@@ -71,7 +79,9 @@ export default function ItemModal({ mode, item, babyName, onClose, onSave }: Pro
       <div className="modal-box" onClick={(e) => e.stopPropagation()}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
           <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1e1b4b' }}>
-            {mode === 'add' ? '준비물 추가' : '준비물 수정'}
+            {isTodoItem
+              ? mode === 'add' ? '할 일 추가' : '할 일 수정'
+              : mode === 'add' ? '준비물 추가' : '준비물 수정'}
           </h3>
           <button
             onClick={onClose}
@@ -82,12 +92,12 @@ export default function ItemModal({ mode, item, babyName, onClose, onSave }: Pro
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
             <label style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block', marginBottom: '8px', fontWeight: 500 }}>
-              준비물 이름 *
+              {isTodoItem ? '할 일 이름 *' : '준비물 이름 *'}
             </label>
             <input
               type="text"
               className="app-input"
-              placeholder="예) 산모 패드, 속싸개, 젖병..."
+              placeholder={isTodoItem ? '예) 커튼 세탁, 세탁기 청소...' : '예) 산모 패드, 속싸개, 젖병...'}
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSave()}
@@ -135,6 +145,27 @@ export default function ItemModal({ mode, item, babyName, onClose, onSave }: Pro
             </div>
           </div>
 
+          {/* 담당 — 해야할일 추가/수정 시 */}
+          {isTodoItem && (
+            <div>
+              <label style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+                담당 <span style={{ color: '#d1d5db', fontWeight: 400 }}>(선택)</span>
+              </label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {TODO_PERSONS.map((p) => (
+                  <button
+                    key={p.value}
+                    type="button"
+                    style={SEL_STYLE(catPerson === p.value)}
+                    onClick={() => setCatPerson(catPerson === p.value ? null : p.value)}
+                  >
+                    {p.icon} {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {mode === 'edit' && (
             <div>
               <label style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block', marginBottom: '8px', fontWeight: 500 }}>
@@ -146,6 +177,7 @@ export default function ItemModal({ mode, item, babyName, onClose, onSave }: Pro
                 {([
                   { value: 'birth', label: '🤰 출산용품' },
                   { value: 'parenting', label: '👶 육아용품' },
+                  { value: 'todo', label: '✅ 해야할 일' },
                 ] as { value: MainType; label: string }[]).map((opt) => (
                   <button key={opt.value} type="button" style={SEL_STYLE(catMain === opt.value)} onClick={() => handleMainChange(opt.value)}>
                     {opt.label}
@@ -153,14 +185,16 @@ export default function ItemModal({ mode, item, babyName, onClose, onSave }: Pro
                 ))}
               </div>
 
-              {/* 소분류 */}
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: catMain === 'birth' ? '8px' : '0' }}>
-                {(catMain === 'birth' ? BIRTH_SUBS : PARENTING_SUBS).map((sub) => (
-                  <button key={sub.value} type="button" style={SEL_STYLE(catSub === sub.value)} onClick={() => setCatSub(sub.value)}>
-                    {sub.icon} {sub.label}
-                  </button>
-                ))}
-              </div>
+              {/* 소분류 — 해야할일이 아닐 때만 */}
+              {catMain !== 'todo' && (
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: catMain === 'birth' ? '8px' : '0' }}>
+                  {(catMain === 'birth' ? BIRTH_SUBS : PARENTING_SUBS).map((sub) => (
+                    <button key={sub.value} type="button" style={SEL_STYLE(catSub === sub.value)} onClick={() => setCatSub(sub.value)}>
+                      {sub.icon} {sub.label}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {/* 산모/아기 (출산용품만) */}
               {catMain === 'birth' && (
@@ -186,7 +220,7 @@ export default function ItemModal({ mode, item, babyName, onClose, onSave }: Pro
             onClick={handleSave}
             disabled={saving || !name.trim()}
           >
-            {saving ? '저장 중...' : mode === 'add' ? '추가' : '저장'}
+            {saving ? '저장 중...' : mode === 'add' ? (isTodoItem ? '추가' : '추가') : '저장'}
           </button>
         </div>
       </div>
