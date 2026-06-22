@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
+import { getDb, initDb } from '@/lib/db';
 import { randomUUID } from 'crypto';
 
 export async function GET() {
+  await initDb();
   const db = getDb();
   const result = await db.execute(`
     SELECT i.*,
