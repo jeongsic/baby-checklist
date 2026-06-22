@@ -59,6 +59,11 @@ function ItemList({
               }}>
                 {item.name}
               </span>
+              {!item.is_ready && item.priority > 0 && (
+                <span style={{ fontSize: '0.7rem', letterSpacing: '-1px', color: '#f59e0b' }}>
+                  {'★'.repeat(item.priority)}
+                </span>
+              )}
               {item.is_ready && <MethodBadge method={item.method} />}
             </div>
             {item.memo && (
@@ -116,12 +121,15 @@ export default function MainClient() {
   }, [fetchItems]);
 
   function filterItems(main: MainType, sub: string, p?: Person) {
-    return items.filter(
+    const filtered = items.filter(
       (i) =>
         i.category_main === main &&
         i.category_sub === sub &&
         (p ? i.category_person === p : !i.category_person)
     );
+    const incomplete = filtered.filter((i) => !i.is_ready).sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+    const complete = filtered.filter((i) => i.is_ready);
+    return [...incomplete, ...complete];
   }
 
   function openAddModal(main: MainType, sub: string, p?: Person) {
@@ -132,7 +140,7 @@ export default function MainClient() {
     setItemModal({ open: true, mode: 'edit', item });
   }
 
-  async function handleItemSave(data: { name: string; memo: string }) {
+  async function handleItemSave(data: { name: string; memo: string; priority: number }) {
     if (itemModal.mode === 'add' && itemModal.context) {
       const { main, sub, person: p } = itemModal.context;
       await fetch('/api/items', {
@@ -144,13 +152,14 @@ export default function MainClient() {
           category_person: p ?? null,
           name: data.name,
           memo: data.memo || null,
+          priority: data.priority,
         }),
       });
     } else if (itemModal.mode === 'edit' && itemModal.item) {
       await fetch(`/api/items/${itemModal.item.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: data.name, memo: data.memo || null }),
+        body: JSON.stringify({ name: data.name, memo: data.memo || null, priority: data.priority }),
       });
     }
     await fetchItems();

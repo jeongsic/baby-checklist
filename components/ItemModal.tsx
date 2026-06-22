@@ -7,18 +7,19 @@ interface Props {
   mode: 'add' | 'edit';
   item?: Item;
   onClose: () => void;
-  onSave: (data: { name: string; memo: string }) => Promise<void>;
+  onSave: (data: { name: string; memo: string; priority: number }) => Promise<void>;
 }
 
 export default function ItemModal({ mode, item, onClose, onSave }: Props) {
   const [name, setName] = useState(item?.name ?? '');
   const [memo, setMemo] = useState(item?.memo ?? '');
+  const [priority, setPriority] = useState(item?.priority ?? 0);
   const [saving, setSaving] = useState(false);
 
   async function handleSave() {
     if (!name.trim()) return;
     setSaving(true);
-    await onSave({ name: name.trim(), memo: memo.trim() });
+    await onSave({ name: name.trim(), memo: memo.trim(), priority });
     setSaving(false);
     onClose();
   }
@@ -63,6 +64,33 @@ export default function ItemModal({ mode, item, onClose, onSave }: Props) {
               value={memo}
               onChange={(e) => setMemo(e.target.value)}
             />
+          </div>
+
+          <div>
+            <label style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+              중요도 <span style={{ color: '#d1d5db', fontWeight: 400 }}>(선택 · 높을수록 상단 노출)</span>
+            </label>
+            <div style={{ display: 'flex', gap: '4px' }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setPriority(priority === star ? 0 : star)}
+                  style={{
+                    fontSize: '1.6rem',
+                    lineHeight: 1,
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '2px 4px',
+                    color: star <= priority ? '#f59e0b' : '#d1d5db',
+                    transition: 'color 0.15s',
+                  }}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 

@@ -21,16 +21,16 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { category_main, category_sub, category_person, name, memo } = body;
+  const { category_main, category_sub, category_person, name, memo, priority } = body;
 
   const db = getDb();
   const id = randomUUID();
   const now = new Date().toISOString();
 
   await db.execute({
-    sql: `INSERT INTO items (id, category_main, category_sub, category_person, name, memo, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    args: [id, category_main, category_sub, category_person ?? null, name, memo ?? null, now],
+    sql: `INSERT INTO items (id, category_main, category_sub, category_person, name, memo, priority, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [id, category_main, category_sub, category_person ?? null, name, memo ?? null, priority ?? 0, now],
   });
 
   return NextResponse.json({ id });

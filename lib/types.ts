@@ -11,6 +11,7 @@ export interface Item {
   category_person: PersonType | null;
   name: string;
   memo: string | null;
+  priority: number;
   created_at: string;
   status_id: string | null;
   is_ready: number | null;

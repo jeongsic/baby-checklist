@@ -4,12 +4,12 @@ import { getDb } from '@/lib/db';
 export async function PUT(req: NextRequest, ctx: RouteContext<'/api/items/[id]'>) {
   const { id } = await ctx.params;
   const body = await req.json();
-  const { name, memo } = body;
+  const { name, memo, priority } = body;
 
   const db = getDb();
   await db.execute({
-    sql: `UPDATE items SET name = ?, memo = ? WHERE id = ?`,
-    args: [name, memo ?? null, id],
+    sql: `UPDATE items SET name = ?, memo = ?, priority = ? WHERE id = ?`,
+    args: [name, memo ?? null, priority ?? 0, id],
   });
 
   return NextResponse.json({ ok: true });

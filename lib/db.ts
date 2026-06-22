@@ -23,6 +23,7 @@ export async function initDb() {
         category_person TEXT,
         name TEXT NOT NULL,
         memo TEXT,
+        priority INTEGER NOT NULL DEFAULT 0,
         created_at TEXT NOT NULL
       )`,
       `CREATE TABLE IF NOT EXISTS item_status (
@@ -41,6 +42,11 @@ export async function initDb() {
   );
   try {
     await db.execute(`ALTER TABLE item_status ADD COLUMN store TEXT`);
+  } catch {
+    // 이미 존재하는 컬럼
+  }
+  try {
+    await db.execute(`ALTER TABLE items ADD COLUMN priority INTEGER NOT NULL DEFAULT 0`);
   } catch {
     // 이미 존재하는 컬럼
   }
