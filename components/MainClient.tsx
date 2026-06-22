@@ -58,7 +58,7 @@ function ItemList({
               <span style={{
                 fontSize: '0.9rem',
                 fontWeight: 500,
-                color: item.is_ready ? '#9ca3af' : '#1e1b4b',
+                color: item.is_ready ? '#d1d5db' : '#1e1b4b',
                 textDecoration: item.is_ready ? 'line-through' : 'none',
               }}>
                 {item.name}
