@@ -227,25 +227,13 @@ export default function MainClient({
     }}>
 
       {/* 헤더 */}
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '36px', gap: '8px' }}>
-        <div style={{ flex: '0 0 60px' }} />
-        <h1 style={{ flex: 1, fontSize: '1.6rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', textAlign: 'center' }}>
+      <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+        <h1 style={{ fontSize: '1.6rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
           <span className="animate-float">🪄</span>
           <span className="brand-text">
             {babyName ? `${babyName}의 체크리스트` : '출산/육아용품 체크리스트'}
           </span>
         </h1>
-        <div style={{ flex: '0 0 60px', display: 'flex', justifyContent: 'flex-end' }}>
-          {!readOnly && (
-            <button
-              onClick={handleLogout}
-              className="btn-ghost"
-              style={{ fontSize: '0.75rem', padding: '5px 10px', whiteSpace: 'nowrap' }}
-            >
-              로그아웃
-            </button>
-          )}
-        </div>
       </div>
 
       {/* 메인 탭 */}
@@ -439,6 +427,19 @@ export default function MainClient({
           items={items}
           onClose={() => setSpendingModal(false)}
         />
+      )}
+
+      {/* 로그아웃 */}
+      {!readOnly && (
+        <div style={{ textAlign: 'center', marginTop: '40px' }}>
+          <button
+            onClick={handleLogout}
+            className="btn-ghost"
+            style={{ fontSize: '0.8rem', padding: '8px 20px', color: '#9ca3af' }}
+          >
+            로그아웃
+          </button>
+        </div>
       )}
 
       {/* 둘러보기 모드 배너 */}
