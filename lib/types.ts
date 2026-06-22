@@ -1,6 +1,6 @@
 export type MainType = 'birth' | 'parenting';
 export type BirthSubType = 'hospital' | 'postpartum';
-export type ParentingSubType = 'eat' | 'play' | 'sleep';
+export type ParentingSubType = 'eat' | 'play' | 'sleep' | 'wash' | 'poop';
 export type PersonType = 'mom' | 'baby';
 export type CheckMethod = 'purchase' | 'sharing' | 'daangn';
 

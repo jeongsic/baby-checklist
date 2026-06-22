@@ -7,7 +7,7 @@ import ItemModal from './ItemModal';
 import CheckModal from './CheckModal';
 
 type BirthSub = 'hospital' | 'postpartum';
-type ParentingSub = 'eat' | 'play' | 'sleep';
+type ParentingSub = 'eat' | 'play' | 'sleep' | 'wash' | 'poop';
 type Person = 'mom' | 'baby';
 
 function MethodBadge({ method }: { method: CheckMethod | null }) {

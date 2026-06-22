@@ -12,6 +12,8 @@ export const PARENTING_SUBS = [
   { value: 'eat', label: '먹', icon: '🍼' },
   { value: 'play', label: '놀', icon: '🧸' },
   { value: 'sleep', label: '잠', icon: '🌙' },
+  { value: 'wash', label: '씻', icon: '🛁' },
+  { value: 'poop', label: '싸', icon: '🚼' },
 ] as const;
 
 export const CHECK_METHODS = [
