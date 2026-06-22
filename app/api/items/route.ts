@@ -6,7 +6,7 @@ export async function GET() {
   const db = getDb();
   const result = await db.execute(`
     SELECT i.*,
-      s.id as status_id, s.is_ready, s.method, s.price, s.from_whom, s.updated_at as status_updated
+      s.id as status_id, s.is_ready, s.method, s.price, s.store, s.from_whom, s.updated_at as status_updated
     FROM items i
     LEFT JOIN item_status s ON i.id = s.item_id
     ORDER BY i.created_at ASC

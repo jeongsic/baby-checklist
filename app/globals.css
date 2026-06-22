@@ -248,6 +248,10 @@ body {
   background: #f0fdf4;
   color: #16a34a;
 }
+.badge-gift {
+  background: #fdf4ff;
+  color: #a21caf;
+}
 
 /* 진행률 바 */
 .progress-bar {

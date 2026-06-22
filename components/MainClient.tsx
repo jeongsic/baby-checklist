@@ -5,6 +5,7 @@ import { Item, MainType, CheckMethod } from '@/lib/types';
 import { BIRTH_SUBS, BIRTH_PERSONS, PARENTING_SUBS, CHECK_METHODS } from '@/lib/constants';
 import ItemModal from './ItemModal';
 import CheckModal from './CheckModal';
+import SpendingModal from './SpendingModal';
 
 type BirthSub = 'hospital' | 'postpartum';
 type ParentingSub = 'eat' | 'play' | 'sleep' | 'wash' | 'poop';
@@ -14,7 +15,7 @@ function MethodBadge({ method }: { method: CheckMethod | null }) {
   if (!method) return null;
   const info = CHECK_METHODS.find((m) => m.value === method);
   if (!info) return null;
-  const cls = method === 'purchase' ? 'badge-purchase' : method === 'daangn' ? 'badge-daangn' : 'badge-sharing';
+  const cls = method === 'purchase' ? 'badge-purchase' : method === 'daangn' ? 'badge-daangn' : method === 'gift' ? 'badge-gift' : 'badge-sharing';
   return <span className={`method-badge ${cls}`}>{info.icon} {info.label}</span>;
 }
 
@@ -65,11 +66,13 @@ function ItemList({
             )}
             {item.is_ready && item.price && (
               <p style={{ fontSize: '0.78rem', color: '#7c3aed', marginTop: '2px', fontWeight: 500 }}>
-                {item.price.toLocaleString()}원
+                {item.price.toLocaleString()}원{item.store ? ` · ${item.store}` : ''}
               </p>
             )}
             {item.is_ready && item.from_whom && (
-              <p style={{ fontSize: '0.78rem', color: '#16a34a', marginTop: '2px' }}>나눔: {item.from_whom}</p>
+              <p style={{ fontSize: '0.78rem', color: item.method === 'gift' ? '#a21caf' : '#16a34a', marginTop: '2px' }}>
+                {item.method === 'gift' ? '선물' : '나눔'}: {item.from_whom}
+              </p>
             )}
           </div>
           <div style={{ display: 'flex', gap: '6px' }} onClick={(e) => e.stopPropagation()}>
@@ -98,6 +101,7 @@ export default function MainClient() {
   }>({ open: false, mode: 'add' });
 
   const [checkModal, setCheckModal] = useState<{ open: boolean; item?: Item }>({ open: false });
+  const [spendingModal, setSpendingModal] = useState(false);
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -160,7 +164,7 @@ export default function MainClient() {
 
   async function handleStatusSave(
     itemId: string,
-    data: { is_ready: boolean; method?: CheckMethod; price?: number; from_whom?: string }
+    data: { is_ready: boolean; method?: CheckMethod; price?: number; store?: string; from_whom?: string }
   ) {
     await fetch(`/api/status/${itemId}`, {
       method: 'PUT',
@@ -177,6 +181,9 @@ export default function MainClient() {
   const tabDone = currentTabItems.filter((i) => i.is_ready).length;
   const tabTotal = currentTabItems.length;
   const tabPct = tabTotal === 0 ? 0 : Math.round((tabDone / tabTotal) * 100);
+  const totalSpend = items
+    .filter((i) => (i.method === 'purchase' || i.method === 'daangn') && i.price)
+    .reduce((s, i) => s + (i.price ?? 0), 0);
 
   return (
     <div style={{ maxWidth: '640px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
@@ -205,16 +212,34 @@ export default function MainClient() {
         ))}
       </div>
 
-      {/* 진행률 */}
-      {tabTotal > 0 && (
+      {/* 진행률 + 지출 */}
+      {items.length > 0 && (
         <div style={{ marginBottom: '28px', padding: '16px 20px', background: '#ffffff', borderRadius: '12px', border: '1px solid #ede9fe' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '10px' }}>
-            <span style={{ color: '#6b7280' }}>{tabDone}/{tabTotal} 준비 완료</span>
-            <span style={{ color: '#7c3aed', fontWeight: 600 }}>{tabPct}%</span>
-          </div>
-          <div className="progress-bar">
-            <div className="progress-fill" style={{ width: `${tabPct}%` }} />
-          </div>
+          {tabTotal > 0 && (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '10px' }}>
+                <span style={{ color: '#6b7280' }}>{tabDone}/{tabTotal} 준비 완료</span>
+                <span style={{ color: '#7c3aed', fontWeight: 600 }}>{tabPct}%</span>
+              </div>
+              <div className="progress-bar">
+                <div className="progress-fill" style={{ width: `${tabPct}%` }} />
+              </div>
+            </>
+          )}
+          <button
+            onClick={() => setSpendingModal(true)}
+            style={{
+              marginTop: tabTotal > 0 ? '12px' : '0',
+              display: 'flex', alignItems: 'center', gap: '6px',
+              fontSize: '0.8rem', background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+              color: totalSpend > 0 ? '#7c3aed' : '#9ca3af',
+            }}
+          >
+            <span>💰</span>
+            <span>총 지출</span>
+            <span style={{ fontWeight: 700 }}>{totalSpend.toLocaleString()}원</span>
+            <span style={{ opacity: 0.4, fontSize: '0.7rem' }}>›</span>
+          </button>
         </div>
       )}
 
@@ -348,6 +373,13 @@ export default function MainClient() {
           item={checkModal.item}
           onClose={() => setCheckModal({ open: false })}
           onSave={handleStatusSave}
+        />
+      )}
+
+      {spendingModal && (
+        <SpendingModal
+          items={items}
+          onClose={() => setSpendingModal(false)}
         />
       )}
     </div>

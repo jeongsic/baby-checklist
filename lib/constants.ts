@@ -17,7 +17,8 @@ export const PARENTING_SUBS = [
 ] as const;
 
 export const CHECK_METHODS = [
-  { value: 'purchase', label: '구매', icon: '🛒', hasPrice: true, hasFromWhom: false },
-  { value: 'daangn', label: '당근', icon: '🥕', hasPrice: true, hasFromWhom: false },
-  { value: 'sharing', label: '나눔', icon: '🤝', hasPrice: false, hasFromWhom: true },
+  { value: 'purchase', label: '구매', icon: '🛒', hasPrice: true, hasStore: true, hasFromWhom: false, fromWhomLabel: '' },
+  { value: 'daangn', label: '당근', icon: '🥕', hasPrice: true, hasStore: true, hasFromWhom: false, fromWhomLabel: '' },
+  { value: 'sharing', label: '나눔', icon: '🤝', hasPrice: false, hasStore: false, hasFromWhom: true, fromWhomLabel: '누구에게 나눔받았나요?' },
+  { value: 'gift', label: '선물', icon: '🎁', hasPrice: false, hasStore: false, hasFromWhom: true, fromWhomLabel: '누구에게 선물받았나요?' },
 ] as const;

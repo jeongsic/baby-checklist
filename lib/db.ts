@@ -31,6 +31,7 @@ export async function initDb() {
         is_ready INTEGER NOT NULL DEFAULT 0,
         method TEXT,
         price INTEGER,
+        store TEXT,
         from_whom TEXT,
         updated_at TEXT NOT NULL,
         FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE
@@ -38,4 +39,9 @@ export async function initDb() {
     ],
     'write'
   );
+  try {
+    await db.execute(`ALTER TABLE item_status ADD COLUMN store TEXT`);
+  } catch {
+    // 이미 존재하는 컬럼
+  }
 }

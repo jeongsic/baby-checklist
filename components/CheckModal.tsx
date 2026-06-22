@@ -11,6 +11,7 @@ interface Props {
     is_ready: boolean;
     method?: CheckMethod;
     price?: number;
+    store?: string;
     from_whom?: string;
   }) => Promise<void>;
 }
@@ -19,6 +20,7 @@ export default function CheckModal({ item, onClose, onSave }: Props) {
   const [isReady, setIsReady] = useState(!!item.is_ready);
   const [method, setMethod] = useState<CheckMethod | null>(item.method ?? null);
   const [price, setPrice] = useState(item.price?.toString() ?? '');
+  const [store, setStore] = useState(item.store ?? '');
   const [fromWhom, setFromWhom] = useState(item.from_whom ?? '');
   const [saving, setSaving] = useState(false);
 
@@ -30,6 +32,7 @@ export default function CheckModal({ item, onClose, onSave }: Props) {
       is_ready: isReady,
       method: isReady ? (method ?? undefined) : undefined,
       price: isReady && selectedMethodInfo?.hasPrice && price ? Number(price) : undefined,
+      store: isReady && selectedMethodInfo?.hasStore && store ? store : undefined,
       from_whom: isReady && selectedMethodInfo?.hasFromWhom && fromWhom ? fromWhom : undefined,
     });
     setSaving(false);
@@ -87,7 +90,7 @@ export default function CheckModal({ item, onClose, onSave }: Props) {
                 <button
                   key={m.value}
                   className={`method-btn ${method === m.value ? 'selected' : ''}`}
-                  onClick={() => setMethod(m.value)}
+                  onClick={() => setMethod(m.value as CheckMethod)}
                 >
                   <div style={{ fontSize: '1.3rem', marginBottom: '4px' }}>{m.icon}</div>
                   <div>{m.label}</div>
@@ -114,10 +117,25 @@ export default function CheckModal({ item, onClose, onSave }: Props) {
               </div>
             )}
 
+            {method && selectedMethodInfo?.hasStore && (
+              <div>
+                <label style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+                  구매처 <span style={{ color: '#d1d5db', fontWeight: 400 }}>(선택)</span>
+                </label>
+                <input
+                  type="text"
+                  className="app-input"
+                  placeholder="예) 쿠팡, 올리브영, 이마트"
+                  value={store}
+                  onChange={(e) => setStore(e.target.value)}
+                />
+              </div>
+            )}
+
             {method && selectedMethodInfo?.hasFromWhom && (
               <div>
                 <label style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block', marginBottom: '8px', fontWeight: 500 }}>
-                  누구에게 나눔받았나요?
+                  {selectedMethodInfo.fromWhomLabel}
                 </label>
                 <input
                   type="text"
