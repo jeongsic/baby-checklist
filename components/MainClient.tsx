@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Item, MainType, CheckMethod } from '@/lib/types';
 import { BIRTH_SUBS, BIRTH_PERSONS, PARENTING_SUBS, CHECK_METHODS } from '@/lib/constants';
+import { SAMPLE_ITEMS } from '@/lib/sampleData';
 import ItemModal from './ItemModal';
 import CheckModal from './CheckModal';
 import SpendingModal from './SpendingModal';
@@ -24,11 +25,13 @@ function ItemList({
   onCheckClick,
   onEditClick,
   onDeleteClick,
+  readOnly,
 }: {
   items: Item[];
   onCheckClick: (item: Item) => void;
   onEditClick: (item: Item) => void;
   onDeleteClick: (item: Item) => void;
+  readOnly?: boolean;
 }) {
   if (items.length === 0) {
     return (
@@ -44,7 +47,8 @@ function ItemList({
         <div
           key={item.id}
           className={`item-row ${item.is_ready ? 'checked' : ''}`}
-          onClick={() => onCheckClick(item)}
+          onClick={readOnly ? undefined : () => onCheckClick(item)}
+          style={{ cursor: readOnly ? 'default' : 'pointer' }}
         >
           <div className={`check-circle ${item.is_ready ? 'checked' : ''}`}>
             {item.is_ready && <span style={{ color: '#fff', fontSize: '12px' }}>✓</span>}
@@ -80,17 +84,27 @@ function ItemList({
               </p>
             )}
           </div>
-          <div style={{ display: 'flex', gap: '6px' }} onClick={(e) => e.stopPropagation()}>
-            <button className="btn-ghost" onClick={() => onEditClick(item)}>수정</button>
-            <button className="btn-danger" onClick={() => onDeleteClick(item)}>삭제</button>
-          </div>
+          {!readOnly && (
+            <div style={{ display: 'flex', gap: '6px' }} onClick={(e) => e.stopPropagation()}>
+              <button className="btn-ghost" onClick={() => onEditClick(item)}>수정</button>
+              <button className="btn-danger" onClick={() => onDeleteClick(item)}>삭제</button>
+            </div>
+          )}
         </div>
       ))}
     </div>
   );
 }
 
-export default function MainClient() {
+export default function MainClient({
+  accountId,
+  babyName,
+  readOnly,
+}: {
+  accountId?: string;
+  babyName?: string;
+  readOnly?: boolean;
+} = {}) {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [mainTab, setMainTab] = useState<MainType>('birth');
@@ -109,16 +123,26 @@ export default function MainClient() {
   const [spendingModal, setSpendingModal] = useState(false);
 
   const fetchItems = useCallback(async () => {
+    if (readOnly) {
+      setItems(SAMPLE_ITEMS);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const res = await fetch('/api/items');
     const data = await res.json();
     setItems(data);
     setLoading(false);
-  }, []);
+  }, [readOnly]);
 
   useEffect(() => {
     fetchItems();
   }, [fetchItems]);
+
+  async function handleLogout() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.href = '/';
+  }
 
   function filterItems(main: MainType, sub: string, p?: Person) {
     const filtered = items.filter(
@@ -195,13 +219,31 @@ export default function MainClient() {
     .reduce((s, i) => s + (i.price ?? 0), 0);
 
   return (
-    <div style={{ maxWidth: '640px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
+    <div style={{
+      maxWidth: '640px',
+      margin: '0 auto',
+      padding: `40px 20px ${readOnly ? '88px' : '40px'}`,
+      width: '100%',
+    }}>
 
       {/* 헤더 */}
-      <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '36px', position: 'relative' }}>
+        {!readOnly && (
+          <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}>
+            <button
+              onClick={handleLogout}
+              className="btn-ghost"
+              style={{ fontSize: '0.75rem', padding: '5px 10px' }}
+            >
+              로그아웃
+            </button>
+          </div>
+        )}
         <h1 style={{ fontSize: '1.6rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
           <span className="animate-float">🪄</span>
-          <span className="brand-text">출산/육아용품 체크리스트</span>
+          <span className="brand-text">
+            {babyName ? `${babyName}의 체크리스트` : '출산/육아용품 체크리스트'}
+          </span>
         </h1>
       </div>
 
@@ -267,7 +309,6 @@ export default function MainClient() {
                     {sub.icon} {sub.label}
                   </h2>
 
-                  {/* 산모/아기 서브탭 */}
                   <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
                     {BIRTH_PERSONS.map((p) => {
                       const filtered = filterItems('birth', sub.value, p.value as Person);
@@ -300,16 +341,19 @@ export default function MainClient() {
                       <div key={p.value}>
                         <ItemList
                           items={filtered}
-                          onCheckClick={(item) => setCheckModal({ open: true, item })}
+                          onCheckClick={(item) => !readOnly && setCheckModal({ open: true, item })}
                           onEditClick={openEditModal}
                           onDeleteClick={handleDelete}
+                          readOnly={readOnly}
                         />
-                        <button
-                          className="add-btn"
-                          onClick={() => openAddModal('birth', sub.value, p.value as Person)}
-                        >
-                          + 준비물 추가
-                        </button>
+                        {!readOnly && (
+                          <button
+                            className="add-btn"
+                            onClick={() => openAddModal('birth', sub.value, p.value as Person)}
+                          >
+                            + 준비물 추가
+                          </button>
+                        )}
                       </div>
                     );
                   })}
@@ -350,16 +394,19 @@ export default function MainClient() {
                   <div key={sub.value}>
                     <ItemList
                       items={filtered}
-                      onCheckClick={(item) => setCheckModal({ open: true, item })}
+                      onCheckClick={(item) => !readOnly && setCheckModal({ open: true, item })}
                       onEditClick={openEditModal}
                       onDeleteClick={handleDelete}
+                      readOnly={readOnly}
                     />
-                    <button
-                      className="add-btn"
-                      onClick={() => openAddModal('parenting', sub.value)}
-                    >
-                      + 준비물 추가
-                    </button>
+                    {!readOnly && (
+                      <button
+                        className="add-btn"
+                        onClick={() => openAddModal('parenting', sub.value)}
+                      >
+                        + 준비물 추가
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -390,6 +437,41 @@ export default function MainClient() {
           items={items}
           onClose={() => setSpendingModal(false)}
         />
+      )}
+
+      {/* 둘러보기 모드 배너 */}
+      {readOnly && (
+        <div style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: '#1e1b4b',
+          color: '#ffffff',
+          padding: '14px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          zIndex: 40,
+          fontSize: '0.85rem',
+        }}>
+          <span>👀 둘러보기 중이에요</span>
+          <button
+            onClick={() => (window.location.href = '/')}
+            style={{
+              background: '#7c3aed',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '6px 16px',
+              fontSize: '0.8rem',
+              cursor: 'pointer',
+              fontWeight: 600,
+            }}
+          >
+            로그인 / 계정 만들기
+          </button>
+        </div>
       )}
     </div>
   );

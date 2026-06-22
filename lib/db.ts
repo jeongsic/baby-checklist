@@ -16,6 +16,12 @@ export async function initDb() {
   const db = getDb();
   await db.batch(
     [
+      `CREATE TABLE IF NOT EXISTS accounts (
+        id TEXT PRIMARY KEY,
+        baby_name TEXT NOT NULL,
+        pin_hash TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      )`,
       `CREATE TABLE IF NOT EXISTS items (
         id TEXT PRIMARY KEY,
         category_main TEXT NOT NULL,
@@ -40,14 +46,7 @@ export async function initDb() {
     ],
     'write'
   );
-  try {
-    await db.execute(`ALTER TABLE item_status ADD COLUMN store TEXT`);
-  } catch {
-    // 이미 존재하는 컬럼
-  }
-  try {
-    await db.execute(`ALTER TABLE items ADD COLUMN priority INTEGER NOT NULL DEFAULT 0`);
-  } catch {
-    // 이미 존재하는 컬럼
-  }
+  try { await db.execute(`ALTER TABLE item_status ADD COLUMN store TEXT`); } catch {}
+  try { await db.execute(`ALTER TABLE items ADD COLUMN priority INTEGER NOT NULL DEFAULT 0`); } catch {}
+  try { await db.execute(`ALTER TABLE items ADD COLUMN account_id TEXT`); } catch {}
 }

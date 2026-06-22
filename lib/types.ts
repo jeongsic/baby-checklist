@@ -4,6 +4,12 @@ export type ParentingSubType = 'eat' | 'play' | 'sleep' | 'wash' | 'poop';
 export type PersonType = 'mom' | 'baby';
 export type CheckMethod = 'purchase' | 'sharing' | 'daangn' | 'gift';
 
+export interface Account {
+  id: string;
+  baby_name: string;
+  created_at: string;
+}
+
 export interface Item {
   id: string;
   category_main: MainType;
@@ -14,7 +20,7 @@ export interface Item {
   priority: number;
   created_at: string;
   status_id: string | null;
-  is_ready: number | null;
+  is_ready: boolean | null;
   method: CheckMethod | null;
   price: number | null;
   store: string | null;
