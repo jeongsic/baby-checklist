@@ -329,7 +329,7 @@ export default function MainClient({
                           }}
                         >
                           {p.icon} {p.label}
-                          {total > 0 && (
+                          {total > 0 && birthSub === sub.value && person === p.value && (
                             <span style={{ marginLeft: '6px', opacity: 0.6, fontSize: '0.75rem' }}>
                               {done}/{total}
                             </span>
@@ -384,7 +384,7 @@ export default function MainClient({
                       onClick={() => setParentingSub(sub.value as ParentingSub)}
                     >
                       {sub.icon} {sub.label}
-                      {total > 0 && (
+                      {total > 0 && parentingSub === sub.value && (
                         <span style={{ marginLeft: '6px', opacity: 0.6, fontSize: '0.75rem' }}>
                           {done}/{total}
                         </span>
