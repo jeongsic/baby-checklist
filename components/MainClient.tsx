@@ -298,9 +298,21 @@ export default function MainClient({
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {BIRTH_SUBS.map((sub) => (
                 <div key={sub.value} className="card" style={{ padding: '24px' }}>
-                  <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#1e1b4b', marginBottom: '18px' }}>
-                    {sub.icon} {sub.label}
-                  </h2>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
+                    <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#1e1b4b' }}>
+                      {sub.icon} {sub.label}
+                    </h2>
+                    <button
+                      onClick={() => openAddModal('birth', sub.value, person)}
+                      style={{
+                        width: '30px', height: '30px', borderRadius: '50%',
+                        background: '#ede9fe', color: '#7c3aed',
+                        fontSize: '1.3rem', border: 'none', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontWeight: 700, lineHeight: 1, flexShrink: 0,
+                      }}
+                    >+</button>
+                  </div>
 
                   <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
                     {BIRTH_PERSONS.map((p) => {
@@ -358,7 +370,8 @@ export default function MainClient({
           {/* 육아용품 */}
           {mainTab === 'parenting' && (
             <div className="card" style={{ padding: '24px' }}>
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' as const, paddingBottom: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' as const, paddingBottom: '4px', flex: 1 }}>
                 {PARENTING_SUBS.map((sub) => {
                   const filtered = filterItems('parenting', sub.value);
                   const done = filtered.filter((i) => i.is_ready).length;
@@ -379,6 +392,19 @@ export default function MainClient({
                     </button>
                   );
                 })}
+              </div>
+              {!readOnly && (
+                <button
+                  onClick={() => openAddModal('parenting', parentingSub)}
+                  style={{
+                    width: '30px', height: '30px', borderRadius: '50%',
+                    background: '#ede9fe', color: '#7c3aed',
+                    fontSize: '1.3rem', border: 'none', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontWeight: 700, lineHeight: 1, flexShrink: 0,
+                  }}
+                >+</button>
+              )}
               </div>
 
               {PARENTING_SUBS.map((sub) => {
@@ -431,6 +457,43 @@ export default function MainClient({
           items={items}
           onClose={() => setSpendingModal(false)}
         />
+      )}
+
+      {/* FAB */}
+      {!readOnly && (
+        <button
+          onClick={() => {
+            if (mainTab === 'birth') openAddModal('birth', birthSub, person);
+            else openAddModal('parenting', parentingSub);
+          }}
+          style={{
+            position: 'fixed',
+            bottom: '28px',
+            right: '24px',
+            width: '56px',
+            height: '56px',
+            borderRadius: '50%',
+            background: '#7c3aed',
+            color: '#ffffff',
+            fontSize: '1.8rem',
+            border: 'none',
+            cursor: 'pointer',
+            boxShadow: '0 4px 20px rgba(124, 58, 237, 0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 30,
+            transition: 'transform 0.15s, box-shadow 0.15s',
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.08)';
+            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 6px 24px rgba(124, 58, 237, 0.5)';
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 20px rgba(124, 58, 237, 0.4)';
+          }}
+        >+</button>
       )}
 
       {/* 로그아웃 */}
