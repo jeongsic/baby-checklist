@@ -12,7 +12,11 @@ export async function GET() {
     LEFT JOIN item_status s ON i.id = s.item_id
     ORDER BY i.created_at ASC
   `);
-  return NextResponse.json(result.rows);
+  const rows = result.rows.map((row: Record<string, unknown>) => ({
+    ...row,
+    is_ready: row.is_ready === 1,
+  }));
+  return NextResponse.json(rows);
 }
 
 export async function POST(req: NextRequest) {
