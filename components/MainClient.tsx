@@ -164,7 +164,7 @@ export default function MainClient({
     setItemModal({ open: true, mode: 'edit', item });
   }
 
-  async function handleItemSave(data: { name: string; memo: string; priority: number }) {
+  async function handleItemSave(data: { name: string; memo: string; priority: number; category_main?: MainType; category_sub?: string; category_person?: string | null }) {
     if (itemModal.mode === 'add' && itemModal.context) {
       const { main, sub, person: p } = itemModal.context;
       await fetch('/api/items', {
@@ -183,7 +183,14 @@ export default function MainClient({
       await fetch(`/api/items/${itemModal.item.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: data.name, memo: data.memo || null, priority: data.priority }),
+        body: JSON.stringify({
+          name: data.name,
+          memo: data.memo || null,
+          priority: data.priority,
+          category_main: data.category_main,
+          category_sub: data.category_sub,
+          category_person: data.category_person ?? null,
+        }),
       });
     }
     await fetchItems();

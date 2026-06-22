@@ -8,13 +8,21 @@ export async function PUT(req: NextRequest, ctx: RouteContext<'/api/items/[id]'>
 
   const { id } = await ctx.params;
   const body = await req.json();
-  const { name, memo, priority } = body;
+  const { name, memo, priority, category_main, category_sub, category_person } = body;
 
   const db = getDb();
-  await db.execute({
-    sql: `UPDATE items SET name = ?, memo = ?, priority = ? WHERE id = ? AND account_id = ?`,
-    args: [name, memo ?? null, priority ?? 0, id, accountId],
-  });
+
+  if (category_main !== undefined) {
+    await db.execute({
+      sql: `UPDATE items SET name = ?, memo = ?, priority = ?, category_main = ?, category_sub = ?, category_person = ? WHERE id = ? AND account_id = ?`,
+      args: [name, memo ?? null, priority ?? 0, category_main, category_sub ?? null, category_person ?? null, id, accountId],
+    });
+  } else {
+    await db.execute({
+      sql: `UPDATE items SET name = ?, memo = ?, priority = ? WHERE id = ? AND account_id = ?`,
+      args: [name, memo ?? null, priority ?? 0, id, accountId],
+    });
+  }
 
   return NextResponse.json({ ok: true });
 }
