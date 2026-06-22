@@ -227,24 +227,25 @@ export default function MainClient({
     }}>
 
       {/* 헤더 */}
-      <div style={{ textAlign: 'center', marginBottom: '36px', position: 'relative' }}>
-        {!readOnly && (
-          <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}>
-            <button
-              onClick={handleLogout}
-              className="btn-ghost"
-              style={{ fontSize: '0.75rem', padding: '5px 10px' }}
-            >
-              로그아웃
-            </button>
-          </div>
-        )}
-        <h1 style={{ fontSize: '1.6rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '36px', gap: '8px' }}>
+        <div style={{ flex: '0 0 60px' }} />
+        <h1 style={{ flex: 1, fontSize: '1.6rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', textAlign: 'center' }}>
           <span className="animate-float">🪄</span>
           <span className="brand-text">
             {babyName ? `${babyName}의 체크리스트` : '출산/육아용품 체크리스트'}
           </span>
         </h1>
+        <div style={{ flex: '0 0 60px', display: 'flex', justifyContent: 'flex-end' }}>
+          {!readOnly && (
+            <button
+              onClick={handleLogout}
+              className="btn-ghost"
+              style={{ fontSize: '0.75rem', padding: '5px 10px', whiteSpace: 'nowrap' }}
+            >
+              로그아웃
+            </button>
+          )}
+        </div>
       </div>
 
       {/* 메인 탭 */}
@@ -365,7 +366,7 @@ export default function MainClient({
           {/* 육아용품 */}
           {mainTab === 'parenting' && (
             <div className="card" style={{ padding: '24px' }}>
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' as const, paddingBottom: '4px' }}>
                 {PARENTING_SUBS.map((sub) => {
                   const filtered = filterItems('parenting', sub.value);
                   const done = filtered.filter((i) => i.is_ready).length;
@@ -374,6 +375,7 @@ export default function MainClient({
                     <button
                       key={sub.value}
                       className={`sub-tab ${parentingSub === sub.value ? 'active' : ''}`}
+                      style={{ flexShrink: 0 }}
                       onClick={() => setParentingSub(sub.value as ParentingSub)}
                     >
                       {sub.icon} {sub.label}
