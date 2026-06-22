@@ -10,7 +10,7 @@ import SpendingModal from './SpendingModal';
 
 type BirthSub = 'hospital' | 'postpartum';
 type ParentingSub = 'eat' | 'play' | 'sleep' | 'wash' | 'poop' | 'outing' | 'parent';
-type Person = 'mom' | 'baby';
+type Person = 'mom' | 'baby' | 'dad';
 
 function MethodBadge({ method }: { method: CheckMethod | null }) {
   if (!method) return null;
@@ -105,6 +105,10 @@ export default function MainClient({
   babyName?: string;
   readOnly?: boolean;
 } = {}) {
+  const birthPersons = BIRTH_PERSONS.map((p) =>
+    p.value === 'baby' && babyName ? { ...p, label: babyName } : p
+  );
+
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [mainTab, setMainTab] = useState<MainType>('birth');
@@ -315,7 +319,7 @@ export default function MainClient({
                   </div>
 
                   <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
-                    {BIRTH_PERSONS.map((p) => {
+                    {birthPersons.map((p) => {
                       const filtered = filterItems('birth', sub.value, p.value as Person);
                       const done = filtered.filter((i) => i.is_ready).length;
                       const total = filtered.length;
@@ -339,7 +343,7 @@ export default function MainClient({
                     })}
                   </div>
 
-                  {BIRTH_PERSONS.map((p) => {
+                  {birthPersons.map((p) => {
                     if (!(birthSub === sub.value && person === p.value)) return null;
                     const filtered = filterItems('birth', sub.value, p.value as Person);
                     return (
@@ -439,6 +443,7 @@ export default function MainClient({
         <ItemModal
           mode={itemModal.mode}
           item={itemModal.item}
+          babyName={babyName}
           onClose={() => setItemModal({ open: false, mode: 'add' })}
           onSave={handleItemSave}
         />

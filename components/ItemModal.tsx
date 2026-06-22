@@ -16,6 +16,7 @@ interface SaveData {
 interface Props {
   mode: 'add' | 'edit';
   item?: Item;
+  babyName?: string;
   onClose: () => void;
   onSave: (data: SaveData) => Promise<void>;
 }
@@ -31,7 +32,7 @@ const SEL_STYLE = (active: boolean) => ({
   cursor: 'pointer' as const,
 });
 
-export default function ItemModal({ mode, item, onClose, onSave }: Props) {
+export default function ItemModal({ mode, item, babyName, onClose, onSave }: Props) {
   const [name, setName] = useState(item?.name ?? '');
   const [memo, setMemo] = useState(item?.memo ?? '');
   const [priority, setPriority] = useState(item?.priority ?? 0);
@@ -166,7 +167,7 @@ export default function ItemModal({ mode, item, onClose, onSave }: Props) {
                 <div style={{ display: 'flex', gap: '6px' }}>
                   {BIRTH_PERSONS.map((p) => (
                     <button key={p.value} type="button" style={SEL_STYLE(catPerson === p.value)} onClick={() => setCatPerson(p.value)}>
-                      {p.icon} {p.label}
+                      {p.icon} {p.value === 'baby' && babyName ? babyName : p.label}
                     </button>
                   ))}
                 </div>

@@ -4,8 +4,9 @@ export const BIRTH_SUBS = [
 ] as const;
 
 export const BIRTH_PERSONS = [
-  { value: 'mom', label: '산모용', icon: '👩' },
-  { value: 'baby', label: '아기용', icon: '👶' },
+  { value: 'mom', label: '엄마', icon: '👩' },
+  { value: 'dad', label: '아빠', icon: '👨' },
+  { value: 'baby', label: '아기', icon: '👶' },
 ] as const;
 
 export const PARENTING_SUBS = [
