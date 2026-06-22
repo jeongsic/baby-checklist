@@ -258,8 +258,8 @@ export default function MainClient({
           {tabTotal > 0 && (
             <>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '10px' }}>
-                <span style={{ color: '#7c3aed', fontWeight: 600 }}>{tabPct}%</span>
-                <span style={{ color: '#6b7280' }}>{tabDone}/{tabTotal} 준비 완료</span>
+                <span style={{ color: '#7c3aed', fontWeight: 600 }}>{tabPct}% 준비 완료</span>
+                <span style={{ color: '#6b7280' }}>{tabDone}/{tabTotal}</span>
               </div>
               <div className="progress-bar">
                 <div className="progress-fill" style={{ width: `${tabPct}%` }} />
