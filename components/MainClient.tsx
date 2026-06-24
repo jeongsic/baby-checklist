@@ -275,7 +275,7 @@ export default function MainClient({
       {/* 헤더 */}
       <div style={{ textAlign: 'center', marginBottom: '36px' }}>
         <h1 style={{ fontSize: '1.6rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-          <span className="animate-float">🪄</span>
+          <span className="animate-float">✨</span>
           <span className="brand-text">
             {babyName ? `${babyName}의 체크리스트` : '출산/육아용품 체크리스트'}
           </span>

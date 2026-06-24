@@ -76,7 +76,7 @@ export default function AuthScreen() {
       <div style={{ width: '100%', maxWidth: '400px' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <div style={{ fontSize: '3rem', marginBottom: '12px' }}>
-            <span className="animate-float" style={{ display: 'inline-block' }}>🪄</span>
+            <span className="animate-float" style={{ display: 'inline-block' }}>✨</span>
           </div>
           <h1 style={{ fontSize: '1.4rem', fontWeight: 700 }}>
             <span className="brand-text">출산/육아용품 체크리스트</span>
