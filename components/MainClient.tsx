@@ -7,6 +7,7 @@ import { SAMPLE_ITEMS } from '@/lib/sampleData';
 import ItemModal from './ItemModal';
 import CheckModal from './CheckModal';
 import SpendingModal from './SpendingModal';
+import SearchModal from './SearchModal';
 
 type BirthSub = 'hospital' | 'postpartum';
 type ParentingSub = 'eat' | 'play' | 'sleep' | 'wash' | 'poop' | 'outing' | 'parent';
@@ -108,9 +109,15 @@ function ItemList({
               )}
             </div>
             {!readOnly && (
-              <div style={{ display: 'flex', gap: '6px' }} onClick={(e) => e.stopPropagation()}>
-                <button className="btn-ghost" onClick={() => onEditClick(item)}>수정</button>
-                <button className="btn-danger" onClick={() => onDeleteClick(item)}>삭제</button>
+              <div className="item-actions" style={{ display: 'flex', gap: '6px' }} onClick={(e) => e.stopPropagation()}>
+                <button className="btn-ghost item-action-btn" onClick={() => onEditClick(item)}>
+                  <span className="btn-label-text">수정</span>
+                  <span className="btn-label-icon">✏️</span>
+                </button>
+                <button className="btn-danger item-action-btn" onClick={() => onDeleteClick(item)}>
+                  <span className="btn-label-text">삭제</span>
+                  <span className="btn-label-icon">🗑️</span>
+                </button>
               </div>
             )}
           </div>
@@ -140,6 +147,7 @@ export default function MainClient({
   const [parentingSub, setParentingSub] = useState<ParentingSub>('eat');
   const [person, setPerson] = useState<Person>('mom');
   const [todoPerson, setTodoPerson] = useState<TodoPerson>('all');
+  const [showAllParentingSubs, setShowAllParentingSubs] = useState(false);
 
   const [itemModal, setItemModal] = useState<{
     open: boolean;
@@ -150,6 +158,7 @@ export default function MainClient({
 
   const [checkModal, setCheckModal] = useState<{ open: boolean; item?: Item }>({ open: false });
   const [spendingModal, setSpendingModal] = useState(false);
+  const [searchModal, setSearchModal] = useState(false);
 
   const fetchItems = useCallback(async () => {
     if (readOnly) {
@@ -267,36 +276,25 @@ export default function MainClient({
     .filter((i) => (i.method === 'purchase' || i.method === 'daangn') && i.price)
     .reduce((s, i) => s + (i.price ?? 0), 0);
 
+  const MAIN_TABS = [
+    { value: 'birth', label: '출산용품', icon: '🤰' },
+    { value: 'parenting', label: '육아용품', icon: '👶' },
+    { value: 'todo', label: '해야할 일', icon: '✅' },
+  ] as const;
+
   return (
     <div className="main-container" style={{
-      padding: `40px 20px ${readOnly ? '88px' : '40px'}`,
+      padding: `40px 20px ${readOnly ? '152px' : '148px'}`,
     }}>
 
       {/* 헤더 */}
-      <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '28px' }}>
         <h1 style={{ fontSize: '1.6rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
           <span className="animate-float">✨</span>
           <span className="brand-text">
             {babyName ? `${babyName}의 체크리스트` : '출산/육아용품 체크리스트'}
           </span>
         </h1>
-      </div>
-
-      {/* 메인 탭 */}
-      <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '28px' }}>
-        {[
-          { value: 'birth', label: '출산용품', icon: '🤰' },
-          { value: 'parenting', label: '육아용품', icon: '👶' },
-          { value: 'todo', label: '해야할 일', icon: '✅' },
-        ].map((tab) => (
-          <button
-            key={tab.value}
-            className={`main-tab ${mainTab === tab.value ? 'active' : ''}`}
-            onClick={() => setMainTab(tab.value as MainType)}
-          >
-            {tab.icon} {tab.label}
-          </button>
-        ))}
       </div>
 
       {/* 진행률 + 지출 */}
@@ -344,71 +342,61 @@ export default function MainClient({
           {mainTab === 'birth' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {BIRTH_SUBS.map((sub) => (
-                <div key={sub.value} className="card" style={{ padding: '24px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
-                    <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#1e1b4b' }}>
+                <div key={sub.value} className="card" style={{ padding: 0 }}>
+                  <div style={{
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 10,
+                    background: '#ffffff',
+                    borderRadius: '16px 16px 0 0',
+                    padding: '20px 24px 16px',
+                    borderBottom: '1px solid #f3f4f6',
+                  }}>
+                    <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#1e1b4b', marginBottom: '14px' }}>
                       {sub.icon} {sub.label}
                     </h2>
-                    <button
-                      onClick={() => openAddModal('birth', sub.value, person)}
-                      style={{
-                        width: '30px', height: '30px', borderRadius: '50%',
-                        background: '#ede9fe', color: '#7c3aed',
-                        fontSize: '1.3rem', border: 'none', cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontWeight: 700, lineHeight: 1, flexShrink: 0,
-                      }}
-                    >+</button>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      {birthPersons.map((p) => {
+                        const filtered = filterItems('birth', sub.value, p.value as Person);
+                        const done = filtered.filter((i) => i.is_ready).length;
+                        const total = filtered.length;
+                        return (
+                          <button
+                            key={p.value}
+                            className={`sub-tab ${birthSub === sub.value && person === p.value ? 'active' : ''}`}
+                            onClick={() => {
+                              setBirthSub(sub.value as BirthSub);
+                              setPerson(p.value as Person);
+                            }}
+                          >
+                            {p.icon} {p.label}
+                            {total > 0 && birthSub === sub.value && person === p.value && (
+                              <span style={{ marginLeft: '6px', opacity: 0.6, fontSize: '0.75rem' }}>
+                                {done}/{total}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+                  <div style={{ padding: '16px 24px 24px' }}>
                     {birthPersons.map((p) => {
+                      if (!(birthSub === sub.value && person === p.value)) return null;
                       const filtered = filterItems('birth', sub.value, p.value as Person);
-                      const done = filtered.filter((i) => i.is_ready).length;
-                      const total = filtered.length;
                       return (
-                        <button
-                          key={p.value}
-                          className={`sub-tab ${birthSub === sub.value && person === p.value ? 'active' : ''}`}
-                          onClick={() => {
-                            setBirthSub(sub.value as BirthSub);
-                            setPerson(p.value as Person);
-                          }}
-                        >
-                          {p.icon} {p.label}
-                          {total > 0 && birthSub === sub.value && person === p.value && (
-                            <span style={{ marginLeft: '6px', opacity: 0.6, fontSize: '0.75rem' }}>
-                              {done}/{total}
-                            </span>
-                          )}
-                        </button>
+                        <div key={p.value}>
+                          <ItemList
+                            items={filtered}
+                            onCheckClick={(item) => !readOnly && setCheckModal({ open: true, item })}
+                            onEditClick={openEditModal}
+                            onDeleteClick={handleDelete}
+                            readOnly={readOnly}
+                          />
+                        </div>
                       );
                     })}
                   </div>
-
-                  {birthPersons.map((p) => {
-                    if (!(birthSub === sub.value && person === p.value)) return null;
-                    const filtered = filterItems('birth', sub.value, p.value as Person);
-                    return (
-                      <div key={p.value}>
-                        <ItemList
-                          items={filtered}
-                          onCheckClick={(item) => !readOnly && setCheckModal({ open: true, item })}
-                          onEditClick={openEditModal}
-                          onDeleteClick={handleDelete}
-                          readOnly={readOnly}
-                        />
-                        {!readOnly && (
-                          <button
-                            className="add-btn"
-                            onClick={() => openAddModal('birth', sub.value, p.value as Person)}
-                          >
-                            + 준비물 추가
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
                 </div>
               ))}
             </div>
@@ -416,74 +404,87 @@ export default function MainClient({
 
           {/* 육아용품 */}
           {mainTab === 'parenting' && (
-            <div className="card" style={{ padding: '24px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
-              <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' as const, paddingBottom: '4px', flex: 1 }}>
+            <div className="card" style={{ padding: 0 }}>
+              <div style={{
+                position: 'sticky',
+                top: 0,
+                zIndex: 10,
+                background: '#ffffff',
+                borderRadius: '16px 16px 0 0',
+                padding: '16px 24px',
+                borderBottom: '1px solid #f3f4f6',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <div style={{
+                    flex: 1, display: 'flex', gap: '8px',
+                    flexWrap: showAllParentingSubs ? 'wrap' : 'nowrap',
+                    overflowX: showAllParentingSubs ? 'visible' : 'auto',
+                    WebkitOverflowScrolling: 'touch' as const,
+                  }}>
+                    {PARENTING_SUBS.map((sub) => {
+                      const filtered = filterItems('parenting', sub.value);
+                      const done = filtered.filter((i) => i.is_ready).length;
+                      const total = filtered.length;
+                      return (
+                        <button
+                          key={sub.value}
+                          className={`sub-tab ${parentingSub === sub.value ? 'active' : ''}`}
+                          style={{ flexShrink: 0 }}
+                          onClick={() => { setParentingSub(sub.value as ParentingSub); setShowAllParentingSubs(false); }}
+                        >
+                          {sub.icon} {sub.label}
+                          {total > 0 && (parentingSub === sub.value || showAllParentingSubs) && (
+                            <span style={{ marginLeft: '6px', opacity: 0.6, fontSize: '0.75rem' }}>{done}/{total}</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button
+                    onClick={() => setShowAllParentingSubs((v) => !v)}
+                    style={{
+                      flexShrink: 0, width: '28px', height: '28px', borderRadius: '50%',
+                      background: showAllParentingSubs ? '#ede9fe' : '#f9fafb',
+                      border: '1.5px solid', borderColor: showAllParentingSubs ? '#c4b5fd' : '#e5e7eb',
+                      color: showAllParentingSubs ? '#7c3aed' : '#9ca3af',
+                      fontSize: '0.7rem', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >{showAllParentingSubs ? '▲' : '▼'}</button>
+                </div>
+              </div>
+              <div style={{ padding: '16px 24px 24px' }}>
                 {PARENTING_SUBS.map((sub) => {
+                  if (parentingSub !== sub.value) return null;
                   const filtered = filterItems('parenting', sub.value);
-                  const done = filtered.filter((i) => i.is_ready).length;
-                  const total = filtered.length;
                   return (
-                    <button
-                      key={sub.value}
-                      className={`sub-tab ${parentingSub === sub.value ? 'active' : ''}`}
-                      style={{ flexShrink: 0 }}
-                      onClick={() => setParentingSub(sub.value as ParentingSub)}
-                    >
-                      {sub.icon} {sub.label}
-                      {total > 0 && parentingSub === sub.value && (
-                        <span style={{ marginLeft: '6px', opacity: 0.6, fontSize: '0.75rem' }}>
-                          {done}/{total}
-                        </span>
-                      )}
-                    </button>
+                    <div key={sub.value}>
+                      <ItemList
+                        items={filtered}
+                        onCheckClick={(item) => !readOnly && setCheckModal({ open: true, item })}
+                        onEditClick={openEditModal}
+                        onDeleteClick={handleDelete}
+                        readOnly={readOnly}
+                      />
+                    </div>
                   );
                 })}
               </div>
-              {!readOnly && (
-                <button
-                  onClick={() => openAddModal('parenting', parentingSub)}
-                  style={{
-                    width: '30px', height: '30px', borderRadius: '50%',
-                    background: '#ede9fe', color: '#7c3aed',
-                    fontSize: '1.3rem', border: 'none', cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontWeight: 700, lineHeight: 1, flexShrink: 0,
-                  }}
-                >+</button>
-              )}
-              </div>
-
-              {PARENTING_SUBS.map((sub) => {
-                if (parentingSub !== sub.value) return null;
-                const filtered = filterItems('parenting', sub.value);
-                return (
-                  <div key={sub.value}>
-                    <ItemList
-                      items={filtered}
-                      onCheckClick={(item) => !readOnly && setCheckModal({ open: true, item })}
-                      onEditClick={openEditModal}
-                      onDeleteClick={handleDelete}
-                      readOnly={readOnly}
-                    />
-                    {!readOnly && (
-                      <button
-                        className="add-btn"
-                        onClick={() => openAddModal('parenting', sub.value)}
-                      >
-                        + 준비물 추가
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
             </div>
           )}
 
           {/* 해야할 일 */}
           {mainTab === 'todo' && (
-            <div className="card" style={{ padding: '24px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+            <div className="card" style={{ padding: 0 }}>
+              <div style={{
+                position: 'sticky',
+                top: 0,
+                zIndex: 10,
+                background: '#ffffff',
+                borderRadius: '16px 16px 0 0',
+                padding: '16px 24px',
+                borderBottom: '1px solid #f3f4f6',
+              }}>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   {([
                     { value: 'all', label: '전체', icon: '📋' },
@@ -507,39 +508,32 @@ export default function MainClient({
                     );
                   })}
                 </div>
-                {!readOnly && (
-                  <button
-                    onClick={() => openAddModal('todo', 'todo')}
-                    style={{
-                      width: '30px', height: '30px', borderRadius: '50%',
-                      background: '#ede9fe', color: '#7c3aed',
-                      fontSize: '1.3rem', border: 'none', cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontWeight: 700, lineHeight: 1, flexShrink: 0,
-                    }}
-                  >+</button>
-                )}
               </div>
-
-              <ItemList
-                items={filterTodoItems(todoPerson)}
-                onCheckClick={(item) => !readOnly && setCheckModal({ open: true, item })}
-                onEditClick={openEditModal}
-                onDeleteClick={handleDelete}
-                readOnly={readOnly}
-                emptyText="아직 할 일이 없어요"
-              />
-              {!readOnly && (
-                <button
-                  className="add-btn"
-                  onClick={() => openAddModal('todo', 'todo')}
-                >
-                  + 할 일 추가
-                </button>
-              )}
+              <div style={{ padding: '16px 24px 24px' }}>
+                <ItemList
+                  items={filterTodoItems(todoPerson)}
+                  onCheckClick={(item) => !readOnly && setCheckModal({ open: true, item })}
+                  onEditClick={openEditModal}
+                  onDeleteClick={handleDelete}
+                  readOnly={readOnly}
+                  emptyText="아직 할 일이 없어요"
+                />
+              </div>
             </div>
           )}
         </>
+      )}
+
+      {!readOnly && (
+        <div style={{ textAlign: 'center', marginTop: '40px' }}>
+          <button
+            onClick={handleLogout}
+            className="btn-ghost"
+            style={{ fontSize: '0.8rem', padding: '8px 20px', color: '#9ca3af' }}
+          >
+            로그아웃
+          </button>
+        </div>
       )}
 
       {itemModal.open && (
@@ -568,56 +562,131 @@ export default function MainClient({
         />
       )}
 
-      {/* FAB */}
-      {!readOnly && (
-        <button
-          onClick={() => {
-            if (mainTab === 'birth') openAddModal('birth', birthSub, person);
-            else if (mainTab === 'parenting') openAddModal('parenting', parentingSub);
-            else openAddModal('todo', 'todo');
-          }}
-          style={{
-            position: 'fixed',
-            bottom: '28px',
-            right: '24px',
-            width: '56px',
-            height: '56px',
-            borderRadius: '50%',
-            background: '#7c3aed',
-            color: '#ffffff',
-            fontSize: '1.8rem',
-            border: 'none',
-            cursor: 'pointer',
-            boxShadow: '0 4px 20px rgba(124, 58, 237, 0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 30,
-            transition: 'transform 0.15s, box-shadow 0.15s',
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.08)';
-            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 6px 24px rgba(124, 58, 237, 0.5)';
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 20px rgba(124, 58, 237, 0.4)';
-          }}
-        >+</button>
+      {searchModal && (
+        <SearchModal
+          items={items}
+          onClose={() => setSearchModal(false)}
+          onCheckClick={(item) => { setSearchModal(false); setCheckModal({ open: true, item }); }}
+          onEditClick={openEditModal}
+          readOnly={readOnly}
+        />
       )}
 
-      {/* 로그아웃 */}
+      {/* 하단 탭바 */}
+      <nav style={{
+        position: 'fixed',
+        bottom: readOnly ? '52px' : '0',
+        left: 0,
+        right: 0,
+        height: '64px',
+        background: '#ffffff',
+        borderTop: '1px solid #f3f4f6',
+        boxShadow: '0 -2px 12px rgba(0,0,0,0.06)',
+        display: 'flex',
+        zIndex: 39,
+      }}>
+        {MAIN_TABS.map((tab) => {
+          const active = mainTab === tab.value;
+          return (
+            <button
+              key={tab.value}
+              onClick={() => setMainTab(tab.value as MainType)}
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '3px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                borderTop: active ? '2px solid #7c3aed' : '2px solid transparent',
+                transition: 'border-color 0.15s',
+                paddingTop: '2px',
+              }}
+            >
+              <span style={{ fontSize: '1.3rem', lineHeight: 1 }}>{tab.icon}</span>
+              <span style={{
+                fontSize: '0.65rem',
+                fontWeight: active ? 700 : 400,
+                color: active ? '#7c3aed' : '#9ca3af',
+                transition: 'color 0.15s',
+              }}>{tab.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* FAB — 검색 + 추가 */}
       {!readOnly && (
-        <div style={{ textAlign: 'center', marginTop: '40px' }}>
+        <>
           <button
-            onClick={handleLogout}
-            className="btn-ghost"
-            style={{ fontSize: '0.8rem', padding: '8px 20px', color: '#9ca3af' }}
-          >
-            로그아웃
-          </button>
-        </div>
+            onClick={() => setSearchModal(true)}
+            style={{
+              position: 'fixed',
+              bottom: '148px',
+              right: '24px',
+              width: '56px',
+              height: '56px',
+              borderRadius: '50%',
+              background: '#f5f3ff',
+              color: '#7c3aed',
+              fontSize: '1.4rem',
+              border: '1.5px solid #ede9fe',
+              cursor: 'pointer',
+              boxShadow: '0 4px 16px rgba(124, 58, 237, 0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 30,
+              transition: 'transform 0.15s, box-shadow 0.15s',
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.08)';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+            }}
+            aria-label="검색"
+          >🔍</button>
+          <button
+            onClick={() => {
+              if (mainTab === 'birth') openAddModal('birth', birthSub, person);
+              else if (mainTab === 'parenting') openAddModal('parenting', parentingSub);
+              else openAddModal('todo', 'todo');
+            }}
+            style={{
+              position: 'fixed',
+              bottom: '80px',
+              right: '24px',
+              width: '56px',
+              height: '56px',
+              borderRadius: '50%',
+              background: '#7c3aed',
+              color: '#ffffff',
+              fontSize: '1.8rem',
+              border: 'none',
+              cursor: 'pointer',
+              boxShadow: '0 4px 20px rgba(124, 58, 237, 0.4)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 30,
+              transition: 'transform 0.15s, box-shadow 0.15s',
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.08)';
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 6px 24px rgba(124, 58, 237, 0.5)';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 20px rgba(124, 58, 237, 0.4)';
+            }}
+          >+</button>
+        </>
       )}
+
 
       {/* 둘러보기 모드 배너 */}
       {readOnly && (

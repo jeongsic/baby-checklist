@@ -300,6 +300,41 @@ body {
   }
 }
 
+/* 아이템 수정/삭제 버튼 — 모바일에서 아이콘 전환 */
+.btn-label-icon { display: none; }
+
+@media (max-width: 640px) {
+  .btn-label-text { display: none; }
+  .btn-label-icon { display: inline; }
+  .item-action-btn {
+    padding: 5px 7px;
+    font-size: 0.95rem;
+    line-height: 1;
+  }
+  /* 서브탭 여백 축소 + 줄바꿈 방지 */
+  .sub-tab {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+}
+
+/* 서브탭 줄바꿈 방지 (모든 화면) */
+.sub-tab {
+  white-space: nowrap;
+}
+
+@media (max-width: 375px) {
+  .item-actions {
+    flex-direction: column;
+    gap: 4px;
+    align-items: stretch;
+  }
+  .item-action-btn {
+    justify-content: center;
+  }
+}
+
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-5px); }
